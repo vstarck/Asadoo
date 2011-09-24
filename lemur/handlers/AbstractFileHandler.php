@@ -7,7 +7,15 @@ use \lemur\core;
  *
  */
 abstract class AbstractFileHandler implements \lemur\core\IHandler {
-	protected abstract function getFilePath($file);
+	protected $path = null;
+		
+	public function __construct($path = null) {		
+		$this->path = $path;
+	}
+	
+	protected function getFilePath($file) {
+		return $this->path . DIRECTORY_SEPARATOR . $file;
+	}
 	
 	public function handle(core\Request $request, core\Response $response) {
 		if($request->lastSegment() == 'box') {
@@ -19,7 +27,7 @@ abstract class AbstractFileHandler implements \lemur\core\IHandler {
 		}
 
 		if($content === false) {			
-			$response->show404();
+			$response->show404();			
 		}
 
 		$response->setCacheControl(CACHE_CONTROL_FOREVER);

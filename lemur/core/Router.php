@@ -51,8 +51,15 @@ class Router {
 	/**
 	 * Registra un handler
 	 */
-	public function addHandler(IHandler $handler) {
-		$this->handlers[] = $handler;
+	public function addHandler() {
+		$args = func_get_args();
+		
+		foreach($args as $handler) {
+			if(!($handler instanceof IHandler)) {
+				throw new Exception("Invalid argument: handler", 1);				
+			}		
+			$this->handlers[] = $handler;
+		}
 		return $this;
 	}
 }

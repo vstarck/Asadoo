@@ -1,21 +1,23 @@
 <?php
 /*
- * Este archivo es la entrada para todos los requests del sistema
- * incluyendo assets, js, css e imagenes.
+ * Lemur
+ *
+ * Copyright (c) 2011 Valentin Starck
+ *
+ * May be freely distributed under the MIT license. See the MIT-LICENSE file.
  */
 
 define('BASE_URL', dirname($_SERVER["SCRIPT_NAME"]));
 define('BASE_PATH', realpath(__DIR__));
 
 /**
- * Autoloader ciruja
- *
- * Funciona unicamente para las clases de lemur
- *
+ * Autoloader
+ * 
  * @param string $className
  * @return bool
  */
-spl_autoload_register(function ($className) {		
+spl_autoload_register(function ($className) {
+	// TODO move this outside, and add project autoload paths		
     $paths = array(
 		BASE_PATH
 	);	
@@ -33,5 +35,6 @@ spl_autoload_register(function ($className) {
     return false;
 });
 
+// TODO merge project and lemur configs
 \lemur\core\Loader::load('config/config.php');
 \lemur\core\Loader::load('config/constants.php');
