@@ -24,7 +24,7 @@ require_once($config['lemur_path'] . DIRECTORY_SEPARATOR . 'init.php');
 	new \lemur\handlers\AssetHandler
 );*/
 \lemur\core\Router::getInstance()->addHandler(
-	new \lemur\handlers\JSHandler
+	new \lemur\handlers\GenericJSHandler
 );
 \lemur\core\Router::getInstance()->addHandler(
 	new \lemur\handlers\BackendHandler
