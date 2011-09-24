@@ -12,7 +12,7 @@ class BackendHandler implements core\IHandler {
 	}
 
 	public function handle(core\Request $request, core\Response $response) {
-		$response->setView('test.view');
+		$response->setView('body.view');
 
 		$response->set('title', 'Test');
 		$response->set('name', $request->get('name', 'world'));

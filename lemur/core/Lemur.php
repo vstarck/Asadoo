@@ -1,7 +1,7 @@
 <?php
 namespace lemur\core;
 
-class Lemur {
+final class Lemur {
 	public static function loadTwig() {
 		$path = BASE_PATH . DIRECTORY_SEPARATOR . 'vendor'. DIRECTORY_SEPARATOR . 'twig'. 
 				DIRECTORY_SEPARATOR . 'lib'. DIRECTORY_SEPARATOR . 'Twig'. 
@@ -18,7 +18,18 @@ class Lemur {
 		return Router::getInstance();
 	}
 
-	public static function start() {
+	private static $config = array();
+	
+	public static function start($config = null) {
+		if(is_array($config)) {
+			self::$config = $config;		
+		}		
+		
 		self::getRouter()->handle();
+	}
+	
+	public static function get($key, $fallback = null) {
+		$config = self::$config;
+		return isset($config['key']) ? $config['key'] : $fallback;
 	}
 }
