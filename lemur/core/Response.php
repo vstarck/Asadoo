@@ -25,6 +25,7 @@ class Response {
 	private $viewVars = array();
 	private $viewName = '';
 	private $mime = 'text/html';
+	private $textBody = '';
 
 	/**
 	 * Define un valor para ser utilizado en
@@ -45,8 +46,8 @@ class Response {
 	 */
 	public function display() {
 		if(!$this->viewName) {
-			if($this->body) {
-				echo $this->body;
+			if($this->textBody) {
+				echo $this->textBody;
 			}
 			return;
 		}
@@ -88,7 +89,7 @@ class Response {
 	 * @return lemur\core\Response
 	 */
 	public function setBody($body) {
-		$this->body = $body;
+		$this->textBody = $body;
 		return $this;
 	}
 

@@ -4,11 +4,7 @@ use \lemur\core;
 
 class BackendHandler implements core\IHandler {
 	public function accept(core\Request $request) {
-		if($request->segment(0) == 'name') {
-			return true;
-		}
-
-		return false;
+		return !$request->any('js/', 'css/', 'images/');
 	}
 
 	public function handle(core\Request $request, core\Response $response) {

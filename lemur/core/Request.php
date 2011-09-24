@@ -60,4 +60,20 @@ class Request {
 
 		return $parts;
 	}
+	
+	public function any() {
+		$args = func_get_args();
+		
+		if(!count($args)) {
+			return false;
+		}
+		
+		foreach($args as $match) {
+			if(strpos($this->uri, $match) !== false) {
+				return true;
+			}
+		}
+		
+		return false;
+	}
 }
