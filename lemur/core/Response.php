@@ -45,6 +45,10 @@ class Response {
 	 * @return lemur\core\Response
 	 */
 	public function display() {
+		if($this->viewName) {
+			$this->textBody = $this->digestView($this->viewName);	
+		}
+		
 		if($this->textBody) {
 
 			header('Content-Type:', $this->mime);
@@ -94,5 +98,16 @@ class Response {
 	public function setMimeType($mime) {
 		$this->mime = $mime;
 		return $this;
+	}
+	
+	// TODO remove
+	public function digestView($viewName) {
+		foreach($this->viewVars as $key => $value) {
+			$$key = $value;
+		}
+		
+		ob_start();
+		include($viewName);
+		return ob_get_clean();
 	}
 }

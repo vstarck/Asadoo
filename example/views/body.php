@@ -1,11 +1,11 @@
 <!DOCTYPE html>
 <html>
 <head>
-	<title>{{ title }}</title>
+	<title><?php echo $title ?></title>
 	<link rel="stylesheet" type="text/css" href="css/style.css" />
 </head>
 <body>	
-Hello {{ name }}
+Hello <?php echo $name ?>
 <script type="text/javascript" src="js/main.js"></script>
 </body>
 </html>
