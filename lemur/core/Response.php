@@ -45,29 +45,15 @@ class Response {
 	 * @return lemur\core\Response
 	 */
 	public function display() {
-		if(!$this->viewName) {
+		if($this->textBody) {
+
+			header('Content-Type:', $this->mime);
 			if($this->textBody) {
 				echo $this->textBody;
 			}
 			return;
 		}
 
-		$viewPath = \lemur\core\Lemur::get('views_path', PROJECT_PATH . DIRECTORY_SEPARATOR . 'views');
-		
-		if(!is_dir($viewPath) || !file_exists($viewPath . DIRECTORY_SEPARATOR . $this->viewName)) {
-			return $this;
-		}
-		
-		// TODO desacoplar Twig
-		Lemur::loadTwig();		
-		$loader = new \Twig_Loader_Filesystem($viewPath);
-		$twig = new \Twig_Environment($loader);
-		
-		$template = $twig->loadTemplate($this->viewName);
-
-		$template->display($this->viewVars);
-
-		// TODO detener ejecucion?
 		return $this;
 	}
 

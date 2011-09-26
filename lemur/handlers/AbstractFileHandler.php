@@ -31,6 +31,7 @@ abstract class AbstractFileHandler implements \lemur\core\IHandler {
 		}
 
 		$response->setCacheControl(CACHE_CONTROL_FOREVER);
+		$response->setMimeType($this->getMimeType());
 		$response->setBody($content);
 		
 		return false;
@@ -54,5 +55,9 @@ abstract class AbstractFileHandler implements \lemur\core\IHandler {
 		}
 
 		return '/*BOX*/';
+	}
+	
+	protected function getMimeType() {
+		return 'text/plain';
 	}
 }

@@ -13,4 +13,8 @@ class GenericCSSHandler extends AbstractFileHandler implements \lemur\core\IHand
 		}
 		return false;
 	}
+	
+	protected function getMimeType() {
+		return 'text/css';
+	}
 }

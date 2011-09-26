@@ -13,4 +13,8 @@ class GenericJSHandler extends AbstractFileHandler implements \lemur\core\IHandl
 		}
 		return false;
 	}
+	
+	protected function getMimeType() {
+		return 'text/javascript';
+	}
 }
