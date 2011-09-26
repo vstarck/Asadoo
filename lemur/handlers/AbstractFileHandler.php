@@ -32,6 +32,8 @@ abstract class AbstractFileHandler implements \lemur\core\IHandler {
 
 		$response->setCacheControl(CACHE_CONTROL_FOREVER);
 		$response->setBody($content);
+		
+		return false;
 	}
 
 	protected function getFileContent($file) {

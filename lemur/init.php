@@ -10,28 +10,40 @@
 define('BASE_URL', dirname($_SERVER["SCRIPT_NAME"]));
 define('BASE_PATH', realpath(__DIR__));
 
+require_once(BASE_PATH . DIRECTORY_SEPARATOR . 'core' . DIRECTORY_SEPARATOR . 'Lemur.php');
+
 /**
  * Autoloader
  * 
  * @param string $className
  * @return bool
  */
-spl_autoload_register(function ($className) {
-	// TODO move this outside, and add project autoload paths		
+spl_autoload_register(function ($className) {	
     $paths = array(
 		BASE_PATH
-	);	
+	);
 
-    $className = preg_replace('/(\\\)?lemur/', '', $className);
-    $className = preg_replace('/(\\\|\/)+/', DIRECTORY_SEPARATOR, $className);
+    $lemurName = preg_replace('/(\\\)?lemur/', '', $className);
+    $lemurName = preg_replace('/(\\\|\/)+/', DIRECTORY_SEPARATOR, $lemurName);
 
     foreach ($paths as $path) {
-		$file = $path . DIRECTORY_SEPARATOR . $className . '.php';
+		$file = $path . DIRECTORY_SEPARATOR . $lemurName . '.php';
         if (file_exists($file)) {
             require_once($file);
             return true;
         }
     }
+	
+	// Project files
+	foreach (\lemur\core\Lemur::get('project_autoload_paths', array()) as $path) {
+		$file = PROJECT_PATH . DIRECTORY_SEPARATOR . $path . DIRECTORY_SEPARATOR . $className . '.php';
+		
+        if (file_exists($file)) {
+            require_once($file);
+            return true;
+        }		
+	}
+	
     return false;
 });
 

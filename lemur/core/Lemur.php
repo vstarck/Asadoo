@@ -11,25 +11,24 @@ final class Lemur {
 
 		\Twig_Autoloader::register();
 	}
-
-	public static function getPropel() {}
 	
 	public static function getRouter() {
 		return Router::getInstance();
 	}
 
-	private static $config = array();
+	public static $config = array();
 	
-	public static function start($config = null) {
+	public static function setConfig($config) {
 		if(is_array($config)) {
 			self::$config = $config;		
-		}		
-		
+		}
+	}
+	
+	public static function start() {
 		self::getRouter()->handle();
 	}
 	
 	public static function get($key, $fallback = null) {
-		$config = self::$config;
-		return isset($config['key']) ? $config['key'] : $fallback;
+		return isset(self::$config[$key]) ? self::$config[$key] : $fallback;
 	}
 }

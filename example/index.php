@@ -24,19 +24,19 @@ define('PROJECT_PATH', dirname(__FILE__));
 
 require_once($config['lemur_path'] . DIRECTORY_SEPARATOR . 'init.php');
 
-use \lemur\handlers as commonHandlers;
+\lemur\core\Lemur::setConfig($config);
 
 // TODO move handlers to an external pipeline
 \lemur\core\Router::getInstance()->addHandler(
 	// JS path
-	new commonHandlers\GenericJSHandler(PROJECT_PATH . DIRECTORY_SEPARATOR . 'js'),
+	new \lemur\handlers\GenericJSHandler(PROJECT_PATH . DIRECTORY_SEPARATOR . 'js'),
 	// CSS path
-	new commonHandlers\GenericCSSHandler(PROJECT_PATH . DIRECTORY_SEPARATOR . 'css'),
+	new \lemur\handlers\GenericCSSHandler(PROJECT_PATH . DIRECTORY_SEPARATOR . 'css'),
 	// TODO rename to Generic*Handler
-	new commonHandlers\BackendHandler
+	new CatchAllHandler
 );
 
-\lemur\core\Lemur::start($config);
+\lemur\core\Lemur::start();
 
 // Clean up
-unset($config);
+//unset($config);
