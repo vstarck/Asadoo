@@ -1,12 +1,16 @@
 <?php
 namespace asadoo\core;
 
+/**
+ *
+ */
 class Request {
 	private $postVars;
 	private $getVars;
 	private $cookieVars;
 	private $uri;
-	
+	private $created;
+
 	private static $instance;
 	
 	public static function create() {	
@@ -20,7 +24,8 @@ class Request {
 		$instance->getVars = $_GET;
 		$instance->cookieVars = $_COOKIE;
 		$instance->uri = isset($_GET['__req']) && $_GET['__req'] ? $_GET['__req'] : '/';
-
+        $instance->created = microtime();
+        
 		unset($_POST, $_GET, $_COOKIE, $_REQUEST, $instance->getVars['__req']);		
 
 		return self::$instance = $instance;
@@ -76,4 +81,13 @@ class Request {
 		
 		return false;
 	}
+
+    /**
+     * Time elapsed
+     *
+     * @return int
+     */
+    public function elapsed() {
+        return number_format(microtime() - $this->created, 3);
+    }
 }

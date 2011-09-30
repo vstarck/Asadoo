@@ -16,14 +16,13 @@ class Router {
 	public static function getInstance() {
 		if(!self::$instance) {
 			self::$instance = new self;			
-			self::$instance->request = Request::create();
-			self::$instance->response = Response::create();	
 		}
 
 		return self::$instance;
 	}
 	
 	private $request;
+	private $response;
 	private $handlers = array();
 
 	/**
@@ -65,4 +64,11 @@ class Router {
 		}
 		return $this;
 	}
+
+    public function setRequest($request) {
+        $this->request = $request;
+    }
+    public function setResponse($response) {
+        $this->response = $response;
+    }
 }

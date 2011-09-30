@@ -1,10 +1,12 @@
 <?php
+namespace asadoo\core;
+
 /**
  * @auhtor Fabien Potencer
  * @see http://www.slideshare.net/fabpot/dependency-injection-with-php-53
  * @throws InvalidArgumentException
  */
-class Container {
+final class Container {
     protected $values = array();
 
     function __set($id, $value) {
