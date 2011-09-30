@@ -1,6 +1,6 @@
 <?php 
 /*
- * asadoo
+ * Asadoo
  *
  * Copyright (c) 2011 Valentin Starck
  *
@@ -28,17 +28,20 @@ $Asadoo = \asadoo\core\asadoo::getInstance();
 
 $Asadoo->setConfig($config);
 
+// Clean up
+unset($config);
+
+//---------------------------------------------------------------------------------------------------------------------
+
 // TODO move handlers to an external pipeline
 \asadoo\core\Router::getInstance()->addHandler(
 	// JS path
 	new \asadoo\handlers\GenericJSHandler(PROJECT_PATH . DIRECTORY_SEPARATOR . 'js'),
 	// CSS path
 	new \asadoo\handlers\GenericCSSHandler(PROJECT_PATH . DIRECTORY_SEPARATOR . 'css'),
-	// TODO rename to Generic*Handler
+	new DocumentationHandler,
 	new CatchAllHandler
 );
 
 $Asadoo->start();
 
-// Clean up
-//unset($config);

@@ -32,13 +32,17 @@ class Response {
 	 * la vista
 	 *
 	 * @param string $key
-	 * @param mixed $value
-	 * @return asadoo\core\Response
+	 * @param mixed|null $value
+	 * @return mixed|null
 	 */
-	public function set($key, $value) {
-		$this->viewVars[$key] = $value;
-		return $this;
+	public function value($key, $value = null) {
+        if(!is_null($value)) {
+            $this->viewVars[$key] = $value;
+        }
+
+		return isset($this->viewVars[$key]) ? $this->viewVars[$key] : null;
 	}
+
 
 	/**
 	 *

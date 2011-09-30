@@ -2,85 +2,121 @@
 namespace asadoo\core;
 
 /**
- *
+ * @author Valentin Starck
  */
 class Request {
-	private $postVars;
-	private $getVars;
-	private $cookieVars;
-	private $uri;
-	private $created;
+    private $requestVars = array();
+    private $postVars;
+    private $getVars;
+    private $cookieVars;
+    private $uri;
+    private $created;
 
-	private static $instance;
-	
-	public static function create() {	
-		if(self::$instance) {
-			return self::$instance;
-		}
-	
-		$instance = new self;
-		
-		$instance->postVars = $_POST;
-		$instance->getVars = $_GET;
-		$instance->cookieVars = $_COOKIE;
-		$instance->uri = isset($_GET['__req']) && $_GET['__req'] ? $_GET['__req'] : '/';
+    private static $instance;
+
+    public static function create() {
+        if (self::$instance) {
+            return self::$instance;
+        }
+
+        $instance = new self;
+
+        $instance->postVars = $_POST;
+        $instance->getVars = $_GET;
+        $instance->cookieVars = $_COOKIE;
+        $instance->uri = isset($_GET['__req']) && $_GET['__req'] ? $_GET['__req'] : '/';
         $instance->created = microtime();
-        
-		unset($_POST, $_GET, $_COOKIE, $_REQUEST, $instance->getVars['__req']);		
 
-		return self::$instance = $instance;
-	}
-	
-	private function __construct() {}
-	private function __clone() {}	
-	
-	public function post($key, $fallback = null) {
-		return isset($this->postVars[$key]) ? $this->postVars[$key] : $fallback;
-	}
-	
-	public function get($key, $fallback = null) {
-		return isset($this->getVars[$key]) ? $this->getVars[$key] : $fallback;
-	}
-	
-	public function cookie($key, $fallback = null) {
-		return isset($this->cookieVars[$key]) ? $this->cookieVars[$key] : $fallback;
-	}
+        unset($_POST, $_GET, $_COOKIE, $_REQUEST, $instance->getVars['__req']);
 
-	public function segment($index = 0) {
-		$parts = explode('/', $this->uri);
+        return self::$instance = $instance;
+    }
 
-		return isset($parts[$index]) ? $parts[$index] : null ;
-	}
+    private function __construct() {
+    }
 
-	public function lastSegment() {
-		$parts = explode('/', $this->uri);
-		
-		return end($parts);
-	}
+    private function __clone() {
+    }
 
-	public function uriTail() {
-		$parts = explode('/', $this->uri);
+    /**
+     * @param $key
+     * @param mixed|null $fallback
+     * @return mixed|null
+     */
+    public function post($key, $fallback = null) {
+        return isset($this->postVars[$key]) ? $this->postVars[$key] : $fallback;
+    }
 
-		array_shift($parts);
+    /**
+     * @param $key
+     * @param mixed|null $fallback
+     * @return mixed|null
+     */
+    public function get($key, $fallback = null) {
+        return isset($this->getVars[$key]) ? $this->getVars[$key] : $fallback;
+    }
 
-		return $parts;
-	}
-	
-	public function any() {
-		$args = func_get_args();
-		
-		if(!count($args)) {
-			return false;
-		}
-		
-		foreach($args as $match) {
-			if(strpos($this->uri, $match) !== false) {
-				return true;
-			}
-		}
-		
-		return false;
-	}
+    /**
+     * @param $key
+     * @param mixed|null $fallback
+     * @return mixed|null
+     */
+    public function cookie($key, $fallback = null) {
+        return isset($this->cookieVars[$key]) ? $this->cookieVars[$key] : $fallback;
+    }
+
+    /**
+     * @param int $index
+     * @return string|null
+     */
+    public function segment($index = 0) {
+        $parts = explode('/', $this->uri);
+
+        return isset($parts[$index]) ? $parts[$index] : null;
+    }
+
+    /**
+     * @return string|null
+     */
+    public function lastSegment() {
+        $parts = explode('/', $this->uri);
+
+        return end($parts);
+    }
+
+    /**
+     * @return array
+     */
+    public function uriTail() {
+        $parts = explode('/', $this->uri);
+
+        array_shift($parts);
+
+        return $parts;
+    }
+
+    /**
+     * @return bool
+     */
+    public function any() {
+        $args = func_get_args();
+
+        if (!count($args)) {
+            return false;
+        }
+
+        foreach ($args as $match) {
+            if (strpos($this->uri, $match) !== false) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    public function uriContains($re) {
+        return preg_match($re, $this->uri) > 0;
+    }
 
     /**
      * Time elapsed
@@ -89,5 +125,22 @@ class Request {
      */
     public function elapsed() {
         return number_format(microtime() - $this->created, 3);
+    }
+
+    /**
+     * Set/Get from request storage
+     *
+     * @param $key
+     * @param null $value
+     * @return null
+     */
+    public function value($key, $value = null) {
+        if (is_null($value)) {
+            return isset($this->requestVars[$key]) ? $this->requestVars[$key] : null;
+        }
+
+        $this->requestVars[$key] = $value;
+
+        return $value;
     }
 }

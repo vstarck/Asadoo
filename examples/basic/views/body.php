@@ -10,20 +10,19 @@
     <script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
     <![endif]-->
 
-    <link rel="stylesheet" type="text/css" href="css/twitter_bootstrap/bootstrap.min.css"/>
-    <link rel="stylesheet" type="text/css" href="css/style.css"/>
+    <link rel="stylesheet" type="text/css" href="/css/twitter_bootstrap/bootstrap.min.css"/>
+    <link rel="stylesheet" type="text/css" href="/css/style.css"/>
 </head>
 <body>
 
 <div class="topbar">
     <div class="fill">
         <div class="container">
-            <a class="brand" href="#">Asadoo</a>
+            <a class="brand" href="">Asadoo!</a>
 
             <ul class="nav">
-                <li class="active"><a href="#">Home</a></li>
-                <li><a href="#about">About</a></li>
-                <li><a href="#contact">Contact</a></li>
+                <li><a href="/es/docs">Docs</a></li>
+                <li><a href="https://github.com/Aijoona/Asadoo">Download</a></li>
             </ul>
         </div>
     </div>
@@ -31,11 +30,9 @@
 </div>
 
 <div class="container">
-
+    <h1>Asadoo!</h1>
     <!-- Main hero unit for a primary marketing message or call to action -->
     <div class="hero-unit">
-        <h1>Hello, world!</h1>
-
         <p>Vestibulum id ligula porta felis euismod semper. Integer posuere erat a ante venenatis dapibus posuere velit
             aliquet. Duis mollis, est non commodo luctus, nisi erat porttitor ligula, eget lacinia odio sem nec
             elit.</p>

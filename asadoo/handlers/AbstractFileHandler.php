@@ -33,7 +33,8 @@ abstract class AbstractFileHandler implements \asadoo\core\IHandler {
 		$response->setCacheControl(CACHE_CONTROL_FOREVER);
 		$response->setMimeType($this->getMimeType());
 		$response->setBody($content);
-		
+		$response->display();
+        
 		return false;
 	}
 

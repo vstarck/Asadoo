@@ -33,18 +33,16 @@ class Router {
 		$response = $this->response;
 
 		// Los handlers se activan en orden de registro
-		foreach($this->handlers as $h) {
+		foreach($this->handlers as $handler) {
 			// Si el handler acepta el request lo atiende
-			if($h->accept($this->request)) {
+			if($handler->accept($request)) {
 				// Un handler puede interrumpir la ejecucion del pipeline
 				// devolviendo false
-				if($h->handle($request, $response) === false) {
+				if($handler->handle($request, $response) === false) {
 					break;
 				}
 			}
 		}
-		// TODO mover a un handler
-		$this->response->display();
 	}
 
 	/**
