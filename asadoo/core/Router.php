@@ -11,61 +11,69 @@ namespace asadoo\core;
  * @singleton
  */
 class Router {
-	private static $instance;	
+    private static $instance;
 
-	public static function getInstance() {
-		if(!self::$instance) {
-			self::$instance = new self;			
-		}
+    public static function getInstance() {
+        if (!self::$instance) {
+            self::$instance = new self;
+        }
 
-		return self::$instance;
-	}
-	
-	private $request;
-	private $response;
-	private $handlers = array();
+        return self::$instance;
+    }
 
-	/**
-	 * Gestiona un request
-	 */
-	public function handle() {
-		$request = $this->request;
-		$response = $this->response;
+    private $request;
+    private $response;
+    private $handlers = array();
 
-		// Los handlers se activan en orden de registro
-		foreach($this->handlers as $handler) {
-			// Si el handler acepta el request lo atiende
-			if($handler->accept($request)) {
-				// Un handler puede interrumpir la ejecucion del pipeline
-				// devolviendo false
-				if($handler->handle($request, $response) === false) {
-					break;
-				}
-			}
-		}
-	}
+    /**
+     * Gestiona un request
+     */
+    public function handle() {
+        $request = $this->request;
+        $response = $this->response;
+        $res = null;
 
-	/**
-	 * Registra un handler
-     * 
+        // Los handlers se activan en orden de registro
+        foreach ($this->handlers as $handler) {
+            if (is_callable($handler)) {
+                $res = $handler($request, $response);
+            } else {
+                // Si el handler acepta el request lo atiende
+                if ($handler->accept($request)) {
+                    // Un handler puede interrumpir la ejecucion del pipeline
+                    // devolviendo false
+                    $res = $handler->handle($request, $response);
+                }
+            }
+
+            if ($res === false) {
+                break;
+            }
+        }
+    }
+
+    /**
+     * Registra un handler
+     *
      * @throws Exception
      * @return Router
      */
-	public function addHandler() {
-		$args = func_get_args();
-		
-		foreach($args as $handler) {
-			if(!($handler instanceof IHandler)) {
-				throw new Exception("Invalid argument: handler", 1);				
-			}		
-			$this->handlers[] = $handler;
-		}
-		return $this;
-	}
+    public function addHandler() {
+        $args = func_get_args();
+
+        foreach ($args as $handler) {
+            if (!($handler instanceof IHandler) && !is_callable($handler)) {
+                throw new Exception("Invalid argument: handler", 1);
+            }
+            $this->handlers[] = $handler;
+        }
+        return $this;
+    }
 
     public function setRequest($request) {
         $this->request = $request;
     }
+
     public function setResponse($response) {
         $this->response = $response;
     }

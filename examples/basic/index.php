@@ -35,6 +35,13 @@ unset($config);
 
 // TODO move handlers to an external pipeline
 \asadoo\core\Router::getInstance()->addHandler(
+    // Lambdas
+    function(\asadoo\core\Request $request, \asadoo\core\Response $response) {
+        if($request->any('lambda')) {
+            echo 'Hello Lambda!';
+            return false;
+        }
+    },
 	// JS path
 	new \asadoo\handlers\GenericJSHandler(PROJECT_PATH . DIRECTORY_SEPARATOR . 'js'),
 	// CSS path
