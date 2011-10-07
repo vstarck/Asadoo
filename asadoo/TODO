@@ -18,3 +18,11 @@
 # Implement a basic MVC example using an ORM (RedBean?)
 
 # Implement a basic MVC example using a view framework (Twig?)
+
+# Implement response headers
+
+# Implement cache headers
+
+# Implement a 404 hook
+
+# Implement a basic (& configurable) logger

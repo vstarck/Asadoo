@@ -43,7 +43,6 @@ class Response {
 		return isset($this->viewVars[$key]) ? $this->viewVars[$key] : null;
 	}
 
-
 	/**
 	 *
 	 * @return asadoo\core\Response
