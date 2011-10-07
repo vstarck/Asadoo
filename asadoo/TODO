@@ -1,0 +1,20 @@
+# Build to one digested file
+
+# Allow simple handlers:
+
+    addHandler(
+        array(
+            // Routes
+            '/usr/',
+            '/usr/get',
+            '/usr/list',
+            // Last array item, the handler as annonymus function
+            function($request, $response) {
+                // ...
+            }
+        )
+    )
+
+# Implement a basic MVC example using an ORM (RedBean?)
+
+# Implement a basic MVC example using a view framework (Twig?)
