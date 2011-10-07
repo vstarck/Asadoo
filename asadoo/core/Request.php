@@ -143,4 +143,12 @@ class Request {
 
         return $value;
     }
+
+    public function path() {
+        return preg_replace('/\?.+/', '',$this->uri);
+    }
+
+    public function isPost() {
+        return count($this->postVars) > 0;
+    }
 }

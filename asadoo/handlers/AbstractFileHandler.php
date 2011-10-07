@@ -2,10 +2,6 @@
 namespace asadoo\handlers;
 use \asadoo\core;
 
-/**
- * TODO pasar la logica de servicio de archivos estaticos a una clase abstracta
- *
- */
 abstract class AbstractFileHandler implements \asadoo\core\IHandler {
 	protected $path = null;
 		
