@@ -22,25 +22,12 @@ final class Asadoo {
                 return Response::create();
             }
         );
-        $container->router = $container->asShared(function() use($container) {
-                $instance = Router::getInstance();
-
-                $instance->setRequest();
-                $instance->setResponse($container->response);
-
-                return $instance;
-            }
-        );
     }
 
     public function setConfig($config) {
         if (is_array($config)) {
             $this->config = $config;
         }
-    }
-
-    public function start() {
-        $this->handle();
     }
 
     public function get($key, $fallback = null) {
@@ -74,7 +61,7 @@ final class Asadoo {
     /**
      * Gestiona un request
      */
-    public function handle() {
+    public function start() {
         $request = $this->container->request;
         $response = $this->container->response;
         $res = null;
