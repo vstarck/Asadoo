@@ -36,7 +36,7 @@ spl_autoload_register(function ($className) {
         }
 
         // Project files
-        foreach (\asadoo\core\asadoo::getInstance()->get('project_autoload_paths', array()) as $path) {
+        foreach (\asadoo\core\asadoo::getInstance()->config->get('project_autoload_paths', array()) as $path) {
             $file = PROJECT_PATH . DIRECTORY_SEPARATOR . $path . DIRECTORY_SEPARATOR . $className . '.php';
 
             if (file_exists($file)) {

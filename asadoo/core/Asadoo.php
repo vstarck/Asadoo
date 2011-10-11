@@ -3,17 +3,16 @@ namespace asadoo\core;
 
 final class Asadoo {
     private static $instance;
-    public $config = array();
-
 
     public static function getInstance() {
         return self::$instance ? self::$instance : (self::$instance = new self);
     }
 
-    public function setup() {
+    private function __construct() {
         // Container setup
         $container = $this;
 
+        // Lazy dependence syntax
         $this->register(
             'cache',
             $container->asShared(function() {
@@ -21,21 +20,18 @@ final class Asadoo {
                 }
             )
         );
+        $this->register(
+            'config',
+            $container->asShared(function() {
+                    return new \asadoo\dependences\Config;
+                }
+            )
+        );
     }
 
     public function setConfig($config) {
-        if (is_array($config)) {
-            $this->config = $config;
-        }
+        $this->config->set($config);
         return $this;
-    }
-
-    public function get($key, $fallback = null) {
-        return isset($this->config[$key]) ? $this->config[$key] : $fallback;
-    }
-
-    public function getContainer() {
-        return $this->container;
     }
 
     public static function load($filepath) {
@@ -63,8 +59,6 @@ final class Asadoo {
      */
     public function start() {
         $asadoo = $this;
-        
-        $this->setup();
 
         $request = Request::create();
         $response = Response::create();
@@ -72,6 +66,7 @@ final class Asadoo {
         $container = function($dep) use($asadoo) {
             return $asadoo->$dep;
         };
+        
         $res = null;
 
         // Los handlers se activan en orden de registro
@@ -123,15 +118,16 @@ final class Asadoo {
     }
 
     /**
-     * @throws InvalidArgumentException
      * @param $id
      * @return mixed
      */
     public function __get($id) {
         if (!isset($this->deps[$id])) {
-            throw new InvalidArgumentException(sprintf('Value "%s" is not defined.', $id));
+            return null;
         }
+
         if (is_callable($this->deps[$id])) {
+            // Lazy loading
             return $this->deps[$id]($this);
         } else {
             return $this->deps[$id];
