@@ -24,21 +24,16 @@ define('PROJECT_PATH', dirname(__FILE__));
 
 require_once($config['asadoo_path'] . DIRECTORY_SEPARATOR . 'init.php');
 
-$Asadoo = \asadoo\core\asadoo::getInstance();
-
-$Asadoo->setConfig($config);
-
-// Clean up
-unset($config);
-
 //---------------------------------------------------------------------------------------------------------------------
 
 // TODO move handlers to an external pipeline
-$Asadoo->addHandler(
+\asadoo\core\asadoo::getInstance()->setConfig($config)->addHandler(
     // Lambdas
     function(\asadoo\core\Request $request, \asadoo\core\Response $response) {
-        if($request->any('lambda')) {
-            echo 'Hello Lambda!';
+        $request->cache->set('file', '123');
+        if($request->any('test')) {
+            echo '<pre>';
+            print_r($request);
             return false;
         }
     },
@@ -48,7 +43,6 @@ $Asadoo->addHandler(
 	new \asadoo\handlers\GenericCSSHandler(PROJECT_PATH . DIRECTORY_SEPARATOR . 'css'),
 	new DocumentationHandler,
 	new CatchAllHandler
-);
+)->start();
 
-$Asadoo->start();
 

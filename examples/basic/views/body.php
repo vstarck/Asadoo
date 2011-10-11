@@ -18,7 +18,7 @@
 <div class="topbar">
     <div class="fill">
         <div class="container">
-            <a class="brand" href="">Asadoo!</a>
+            <a class="brand" href="/">Asadoo!</a>
 
             <ul class="nav">
                 <li><a href="/es/docs">Docs</a></li>

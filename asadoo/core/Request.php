@@ -14,7 +14,7 @@ class Request {
 
     private static $instance;
 
-    public static function create() {
+    public static function create($deps = array()) {
         if (self::$instance) {
             return self::$instance;
         }
@@ -28,6 +28,10 @@ class Request {
         $instance->created = microtime();
 
         unset($_POST, $_GET, $_COOKIE, $_REQUEST, $instance->getVars['__req']);
+
+        foreach($deps as $key => $value) {
+            $instance->{$key} = $value;
+        }
 
         return self::$instance = $instance;
     }

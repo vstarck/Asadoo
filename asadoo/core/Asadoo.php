@@ -4,21 +4,31 @@ namespace asadoo\core;
 final class Asadoo {
     private static $instance;
     public $config = array();
-    private $container;
 
     public static function getInstance() {
         return self::$instance ? self::$instance : (self::$instance = new self);
     }
 
-    public function __construct() {
-        // Container setup
-        $container = $this->container = new Container();
+    public function setup() {
 
-        $container->request = $container->asShared(function() {
-                return Request::create();
+        // Container setup
+        $container = $this;
+
+        $this->cache = $container->asShared(function() {
+                return FileCache::getInstance();
             }
         );
-        $container->response = $container->asShared(function() {
+
+        $this->request = $container->asShared(function() use($container) {
+                return Request::create(
+                    array(
+                         'cache' => $container->cache
+                    )
+                );
+            }
+        );
+
+        $this->response = $container->asShared(function() {
                 return Response::create();
             }
         );
@@ -28,6 +38,7 @@ final class Asadoo {
         if (is_array($config)) {
             $this->config = $config;
         }
+        return $this;
     }
 
     public function get($key, $fallback = null) {
@@ -62,8 +73,10 @@ final class Asadoo {
      * Gestiona un request
      */
     public function start() {
-        $request = $this->container->request;
-        $response = $this->container->response;
+        $this->setup();
+
+        $request = $this->request;
+        $response = $this->response;
         $res = null;
 
         // Los handlers se activan en orden de registro
@@ -86,7 +99,7 @@ final class Asadoo {
     }
 
     /**
-     * Registar a request handler
+     * Register a request handler
      *
      * @throws Exception
      * @return Router
@@ -101,5 +114,38 @@ final class Asadoo {
             $this->handlers[] = $handler;
         }
         return $this;
+    }
+
+    /**
+     * @auhtor Fabien Potencer
+     * @see http://www.slideshare.net/fabpot/dependency-injection-with-php-53
+     * @throws InvalidArgumentException
+     */
+
+    protected $deps = array();
+
+    function __set($id, $value) {
+        $this->deps[$id] = $value;
+    }
+
+    function __get($id) {
+        if (!isset($this->deps[$id])) {
+            throw new InvalidArgumentException(sprintf('Value "%s" is not defined.', $id));
+        }
+        if (is_callable($this->deps[$id])) {
+            return $this->deps[$id]($this);
+        } else {
+            return $this->deps[$id];
+        }
+    }
+
+    function asShared($callable) {
+        return function ($c) use ($callable) {
+            static $object;
+            if (is_null($object)) {
+                $object = $callable($c);
+            }
+            return $object;
+        };
     }
 }
