@@ -11,7 +11,6 @@ final class Asadoo {
     }
 
     public function setup() {
-
         // Container setup
         $container = $this;
 
@@ -22,9 +21,6 @@ final class Asadoo {
                 }
             )
         );
-
-        $this->request = Request::create();
-        $this->response = Response::create();
     }
 
     public function setConfig($config) {
@@ -70,8 +66,8 @@ final class Asadoo {
         
         $this->setup();
 
-        $request = $this->request;
-        $response = $this->response;
+        $request = Request::create();
+        $response = Response::create();
 
         $container = function($dep) use($asadoo) {
             return $asadoo->$dep;
