@@ -145,7 +145,7 @@ class Request {
     }
 
     public function path() {
-        return preg_replace('/\?.+/', '',$this->uri);
+        return preg_replace('/\?.+/', '', $this->uri);
     }
 
     public function isPost() {

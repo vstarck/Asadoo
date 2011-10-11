@@ -34,7 +34,7 @@ unset($config);
 //---------------------------------------------------------------------------------------------------------------------
 
 // TODO move handlers to an external pipeline
-\asadoo\core\Router::getInstance()->addHandler(
+$Asadoo->addHandler(
     // Lambdas
     function(\asadoo\core\Request $request, \asadoo\core\Response $response) {
         if($request->any('lambda')) {

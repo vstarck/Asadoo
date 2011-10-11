@@ -66,5 +66,5 @@ set_exception_handler(
 );
 
 // TODO merge project and asadoo configs
-\asadoo\core\Loader::load('config/config.php');
-\asadoo\core\Loader::load('config/constants.php');
+\asadoo\core\Asadoo::load('config/config.php');
+\asadoo\core\Asadoo::load('config/constants.php');

@@ -2,6 +2,11 @@
 namespace asadoo\handlers;
 use \asadoo\core;
 
+/**
+ * new GenericPostHandler('/user/save', function($request, $response) {
+ *      // stuff
+ * })
+ */
 class GenericPostHandler implements \asadoo\core\IHandler {
     protected $path;
     protected $handler;

@@ -24,8 +24,8 @@ final class Asadoo {
         );
         $container->router = $container->asShared(function() use($container) {
                 $instance = Router::getInstance();
-                
-                $instance->setRequest($container->request);
+
+                $instance->setRequest();
                 $instance->setResponse($container->response);
 
                 return $instance;
@@ -40,7 +40,7 @@ final class Asadoo {
     }
 
     public function start() {
-        $this->container->router->handle();
+        $this->handle();
     }
 
     public function get($key, $fallback = null) {
@@ -49,5 +49,70 @@ final class Asadoo {
 
     public function getContainer() {
         return $this->container;
+    }
+
+    public static function load($filepath) {
+        $filepath = preg_replace('/(\\\|\/)+/', DIRECTORY_SEPARATOR, $filepath);
+
+        if (substr($filepath, 0, 1) != DIRECTORY_SEPARATOR) {
+            $filepath = DIRECTORY_SEPARATOR . $filepath;
+        }
+
+        $filepath = BASE_PATH . $filepath;
+
+        if (!file_exists($filepath)) {
+            return false;
+        }
+
+        require_once($filepath);
+
+        return true;
+    }
+
+    private $handlers = array();
+
+    /**
+     * Gestiona un request
+     */
+    public function handle() {
+        $request = $this->container->request;
+        $response = $this->container->response;
+        $res = null;
+
+        // Los handlers se activan en orden de registro
+        foreach ($this->handlers as $handler) {
+            if (is_callable($handler)) {
+                $res = $handler($request, $response);
+            } else {
+                // Si el handler acepta el request lo atiende
+                if ($handler->accept($request)) {
+                    // Un handler puede interrumpir la ejecucion del pipeline
+                    // devolviendo false
+                    $res = $handler->handle($request, $response);
+                }
+            }
+
+            if ($res === false) {
+                break;
+            }
+        }
+    }
+
+    /**
+     * Registar a request handler
+     *
+     * @throws Exception
+     * @return Router
+     */
+    public function addHandler() {
+        $args = func_get_args();
+
+        foreach ($args as $handler) {
+            if (!($handler instanceof IHandler) && !is_callable($handler)) {
+                throw new Exception("Invalid argument: handler", 1);
+            }
+            $this->handlers[] = $handler;
+        }
+        return $this;
     }
 }
