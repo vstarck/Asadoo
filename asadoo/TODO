@@ -8,7 +8,7 @@
             '/usr/',
             '/usr/get',
             '/usr/list',
-            // Last array item, the handler as annonymus function
+            // Last array item isthe handler as annonymus function
             function($request, $response) {
                 // ...
             }
@@ -19,20 +19,16 @@
 
 # Implement a basic MVC example using a view framework (Twig?)
 
-# Implement response headers
+# Implement response code headers
 
 # Implement cache headers
 
-# Implement a 404 hook
+# Implement a 404 hook (exception?)
 
-# Implement a basic (& configurable) logger
-
-# Custom deps management
+# Implement a basic (& configurable) logger dependence
 
 handler($request, $response, $deps) {
-    $deps->cache->set('foo', 'bar');
+    $logger = $deps('logger');
 
-    if(!$deps->auth || !$deps->auth->isLogged()) {
-        $response->setResponseCode(301);
-    }
+    $logger->info('Hello World!');
 }
