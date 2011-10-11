@@ -5,6 +5,7 @@ final class Asadoo {
     private static $instance;
     public $config = array();
 
+
     public static function getInstance() {
         return self::$instance ? self::$instance : (self::$instance = new self);
     }
@@ -14,24 +15,16 @@ final class Asadoo {
         // Container setup
         $container = $this;
 
-        $this->cache = $container->asShared(function() {
-                return FileCache::getInstance();
-            }
+        $this->register(
+            'cache',
+            $container->asShared(function() {
+                    return \asadoo\dependences\FileCache::getInstance();
+                }
+            )
         );
 
-        $this->request = $container->asShared(function() use($container) {
-                return Request::create(
-                    array(
-                         'cache' => $container->cache
-                    )
-                );
-            }
-        );
-
-        $this->response = $container->asShared(function() {
-                return Response::create();
-            }
-        );
+        $this->request = Request::create();
+        $this->response = Response::create();
     }
 
     public function setConfig($config) {
@@ -73,22 +66,28 @@ final class Asadoo {
      * Gestiona un request
      */
     public function start() {
+        $asadoo = $this;
+        
         $this->setup();
 
         $request = $this->request;
         $response = $this->response;
+
+        $container = function($dep) use($asadoo) {
+            return $asadoo->$dep;
+        };
         $res = null;
 
         // Los handlers se activan en orden de registro
         foreach ($this->handlers as $handler) {
             if (is_callable($handler)) {
-                $res = $handler($request, $response);
+                $res = $handler($request, $response, $container);
             } else {
                 // Si el handler acepta el request lo atiende
-                if ($handler->accept($request)) {
+                if ($handler->accept($request, $container)) {
                     // Un handler puede interrumpir la ejecucion del pipeline
                     // devolviendo false
-                    $res = $handler->handle($request, $response);
+                    $res = $handler->handle($request, $response, $container);
                 }
             }
 
@@ -119,16 +118,20 @@ final class Asadoo {
     /**
      * @auhtor Fabien Potencer
      * @see http://www.slideshare.net/fabpot/dependency-injection-with-php-53
-     * @throws InvalidArgumentException
      */
 
     protected $deps = array();
 
-    function __set($id, $value) {
+    public function register($id, $value) {
         $this->deps[$id] = $value;
     }
 
-    function __get($id) {
+    /**
+     * @throws InvalidArgumentException
+     * @param $id
+     * @return mixed
+     */
+    public function __get($id) {
         if (!isset($this->deps[$id])) {
             throw new InvalidArgumentException(sprintf('Value "%s" is not defined.', $id));
         }
@@ -139,9 +142,10 @@ final class Asadoo {
         }
     }
 
-    function asShared($callable) {
+    public function asShared($callable) {
         return function ($c) use ($callable) {
             static $object;
+
             if (is_null($object)) {
                 $object = $callable($c);
             }

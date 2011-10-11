@@ -1,5 +1,5 @@
 <?php
-namespace asadoo\core;
+namespace asadoo\dependences;
  
 class FileCache {
 	private static $instance;
@@ -19,7 +19,6 @@ class FileCache {
 	}
 
     public function set($key, $value = null) {
-
     }
 
     public function get($key, $value) {

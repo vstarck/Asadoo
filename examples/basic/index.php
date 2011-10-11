@@ -29,8 +29,11 @@ require_once($config['asadoo_path'] . DIRECTORY_SEPARATOR . 'init.php');
 // TODO move handlers to an external pipeline
 \asadoo\core\asadoo::getInstance()->setConfig($config)->addHandler(
     // Lambdas
-    function(\asadoo\core\Request $request, \asadoo\core\Response $response) {
-        $request->cache->set('file', '123');
+    function(\asadoo\core\Request $request, \asadoo\core\Response $response, Closure $container) {
+
+        // Using dependences
+        $container('cache')->set('file', '123');
+        
         if($request->any('test')) {
             echo '<pre>';
             print_r($request);
