@@ -22,7 +22,8 @@ if(!isset($config['asadoo_path'])) {
 
 define('PROJECT_PATH', dirname(__FILE__));
 
-require_once($config['asadoo_path'] . DIRECTORY_SEPARATOR . 'init.php');
+//require_once($config['asadoo_path'] . DIRECTORY_SEPARATOR . 'init.php');
+require_once('..' . DIRECTORY_SEPARATOR . '..' . DIRECTORY_SEPARATOR . 'dist' . DIRECTORY_SEPARATOR . 'index.php');
 
 //---------------------------------------------------------------------------------------------------------------------
 
