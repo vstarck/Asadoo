@@ -1,8 +1,8 @@
 # Build to one digested file
 
-# Buffer response->send and flush it on pipeline end
+# Buffer response->send and flush it when pipeline breaks?
 
-# Allow simple handlers:
+# Allow simple handlers with multiple routes:
 
     addHandler(
         array(
@@ -27,10 +27,12 @@
 
 # Implement a 404 hook (exception?)
 
-# Implement a basic (& configurable) logger dependence
+# Implement a basic (& configurable) logger dependence (dependences/Logger.php)
 
 handler($request, $response, $deps) {
     $logger = $deps('logger');
 
     $logger->info('Hello World!');
 }
+
+# Implement digested assets (CSS & JS) with file cache
