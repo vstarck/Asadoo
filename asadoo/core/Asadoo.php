@@ -14,7 +14,7 @@ final class Asadoo {
 
         // Lazy dependence syntax
         $this->register(
-            'cache',
+            'file_cache',
             $container->asShared(function() {
                     return \asadoo\dependences\FileCache::getInstance();
                 }
@@ -66,7 +66,7 @@ final class Asadoo {
         $container = function($dep) use($asadoo) {
             return $asadoo->$dep;
         };
-        
+
         $res = null;
 
         // Los handlers se activan en orden de registro
@@ -82,7 +82,10 @@ final class Asadoo {
                 }
             }
 
-            if ($res === false) {
+            if (is_string($res)) {
+                $request->send($res);
+            }
+            if ($res === false || !$request->isActive()) {
                 break;
             }
         }

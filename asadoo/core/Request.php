@@ -12,6 +12,11 @@ class Request {
     private $uri;
     private $created;
 
+    /**
+     * @var bool
+     */
+    private $active;
+
     private static $instance;
 
     public static function create($deps = array()) {
@@ -40,6 +45,14 @@ class Request {
     }
 
     private function __clone() {
+    }
+
+    public function end() {
+        $this->active = false;
+    }
+
+    public function isActive() {
+        return $this->active;
     }
 
     /**
@@ -154,5 +167,9 @@ class Request {
 
     public function isPost() {
         return count($this->postVars) > 0;
+    }
+
+    public function send($data) {
+        echo $data;
     }
 }

@@ -30,19 +30,22 @@ require_once($config['asadoo_path'] . DIRECTORY_SEPARATOR . 'init.php');
 \asadoo\core\asadoo::getInstance()->setConfig($config)->addHandler(
     // Lambdas
     function(\asadoo\core\Request $request, \asadoo\core\Response $response, Closure $container) {
+        if(!$request->any('test')) {
+            return;
+        }
 
         // Using dependences
-        $container('cache')->set('file', '123');
-        
-        if($request->any('test')) {
-            echo '<pre>';
-            print_r($request);
-            return false;
-        }
+        $container('file_cache')->set('file', '123');
+
+        // Stop handling after this
+        $request->end();
+
+        // Send foo
+        return 'foo';
     },
-	// JS path
+	// Use a generic handler to serve js files
 	new \asadoo\handlers\GenericJSHandler(PROJECT_PATH . DIRECTORY_SEPARATOR . 'js'),
-	// CSS path
+	// Use a generic handler to serve css files
 	new \asadoo\handlers\GenericCSSHandler(PROJECT_PATH . DIRECTORY_SEPARATOR . 'css'),
 	new DocumentationHandler,
 	new CatchAllHandler
