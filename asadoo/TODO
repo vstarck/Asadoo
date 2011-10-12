@@ -1,5 +1,7 @@
 # Build to one digested file
 
+# Buffer response->send and flush it on pipeline end
+
 # Allow simple handlers:
 
     addHandler(
