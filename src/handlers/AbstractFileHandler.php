@@ -31,8 +31,8 @@ abstract class AbstractFileHandler implements \asadoo\core\IHandler {
 		$response->setMimeType($this->getMimeType());
 		$response->setBody($content);
 		$response->display();
-        
-		return false;
+		
+		$request->end();
 	}
 
 	protected function getFileContent($file) {
