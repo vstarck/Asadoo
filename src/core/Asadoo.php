@@ -1,5 +1,6 @@
 <?php
-namespace asadoo\core;
+namespace asadoo;
+use Exception;
 
 final class Asadoo {
     private static $instance;
@@ -16,14 +17,14 @@ final class Asadoo {
         $this->register(
             'file_cache',
             $container->asShared(function() {
-                    return \asadoo\dependences\FileCache::getInstance();
+                    return \asadoo\FileCache::getInstance();
                 }
             )
         );
         $this->register(
             'config',
             $container->asShared(function() {
-                    return new \asadoo\dependences\Config;
+                    return new \asadoo\Config;
                 }
             )
         );

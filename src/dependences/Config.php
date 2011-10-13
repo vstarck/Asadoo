@@ -1,5 +1,5 @@
 <?php
-namespace asadoo\dependences;
+namespace asadoo;
 
 class Config {
     public function set($config) {

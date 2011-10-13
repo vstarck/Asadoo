@@ -1,5 +1,5 @@
 <?php
-namespace asadoo\dependences;
+namespace asadoo;
  
 class FileCache {
 	private static $instance;

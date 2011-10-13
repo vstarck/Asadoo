@@ -1,5 +1,5 @@
 <?php
-namespace asadoo\core;
+namespace asadoo;
 
 /**
  * Agrupa las funcionalidades relacionadas al

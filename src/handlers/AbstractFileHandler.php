@@ -1,9 +1,8 @@
 <?php
-namespace asadoo\handlers;
-use \asadoo\core;
+namespace asadoo;
 use Closure;
 
-abstract class AbstractFileHandler implements \asadoo\core\IHandler {
+abstract class AbstractFileHandler implements IHandler {
 	protected $path = null;
 		
 	public function __construct($path = null) {		
@@ -14,7 +13,7 @@ abstract class AbstractFileHandler implements \asadoo\core\IHandler {
 		return $this->path . DIRECTORY_SEPARATOR . $file;
 	}
 	
-	public function handle(core\Request $request, core\Response $response, \Closure $container) {
+	public function handle(Request $request, Response $response, Closure $container) {
 		if($request->lastSegment() == 'box') {
 			// Concatenados		
 			$content = $this->getMultipleFileContent($request->get('files', ''));

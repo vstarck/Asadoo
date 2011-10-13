@@ -1,6 +1,5 @@
 <?php
-namespace asadoo\core;
-
+namespace asadoo;
 /**
  * @author Valentin Starck
  */

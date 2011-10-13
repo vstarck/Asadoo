@@ -1,11 +1,11 @@
 <?php
 
-class DocumentationHandler implements asadoo\core\IHandler {
-	public function accept(asadoo\core\Request $request, Closure $container) {
+class DocumentationHandler implements asadoo\IHandler {
+	public function accept(asadoo\Request $request, Closure $container) {
         return $request->segment(1) == 'docs';
 	}
 
-	public function handle(asadoo\core\Request $request, asadoo\core\Response $response, Closure $container) {
+	public function handle(asadoo\Request $request, asadoo\Response $response, Closure $container) {
 		$response->setView(PROJECT_PATH . DIRECTORY_SEPARATOR . 'views' . DIRECTORY_SEPARATOR . 'body.php');
 
 		$response->value('title', 'Asadoo :: Documentacion [' . strtoupper($request->segment(0)) . ']');

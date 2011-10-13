@@ -22,15 +22,15 @@ if(!isset($config['asadoo_path'])) {
 
 define('PROJECT_PATH', dirname(__FILE__));
 
-//require_once($config['asadoo_path'] . DIRECTORY_SEPARATOR . 'init.php');
-require_once('..' . DIRECTORY_SEPARATOR . '..' . DIRECTORY_SEPARATOR . 'dist' . DIRECTORY_SEPARATOR . 'index.php');
+require_once($config['asadoo_path'] . DIRECTORY_SEPARATOR . 'init.php');
+//require_once('..' . DIRECTORY_SEPARATOR . '..' . DIRECTORY_SEPARATOR . 'dist' . DIRECTORY_SEPARATOR . 'index.php');
 
 //---------------------------------------------------------------------------------------------------------------------
 
 // TODO move handlers to an external pipeline
-\asadoo\core\asadoo::getInstance()->setConfig($config)->addHandler(
+\asadoo\Asadoo::getInstance()->setConfig($config)->addHandler(
     // Lambdas
-    function(\asadoo\core\Request $request, \asadoo\core\Response $response, Closure $container) {
+    function(\asadoo\Request $request, \asadoo\Response $response, Closure $container) {
         if(!$request->any('test')) {
             return;
         }
@@ -45,9 +45,9 @@ require_once('..' . DIRECTORY_SEPARATOR . '..' . DIRECTORY_SEPARATOR . 'dist' . 
         return 'foo';
     },
 	// Use a generic handler to serve js files
-	new \asadoo\handlers\GenericJSHandler(PROJECT_PATH . DIRECTORY_SEPARATOR . 'js'),
+	new \asadoo\GenericJSHandler(PROJECT_PATH . DIRECTORY_SEPARATOR . 'js'),
 	// Use a generic handler to serve css files
-	new \asadoo\handlers\GenericCSSHandler(PROJECT_PATH . DIRECTORY_SEPARATOR . 'css'),
+	new \asadoo\GenericCSSHandler(PROJECT_PATH . DIRECTORY_SEPARATOR . 'css'),
 	new DocumentationHandler,
 	new CatchAllHandler
 )->start();

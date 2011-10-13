@@ -1,14 +1,13 @@
 <?php
-namespace asadoo\handlers;
-use \asadoo\core;
+namespace asadoo;
 use Closure;
 
-class GenericJSHandler extends AbstractFileHandler implements \asadoo\core\IHandler {
+class GenericJSHandler extends AbstractFileHandler implements IHandler {
 	public function __construct($path = null) {
 		parent::__construct($path);
 	}
 	
-	public function accept(core\Request $request, Closure $container) {
+	public function accept(Request $request, Closure $container) {
 		if($request->segment(0) == JS_URI_SEGMENT) {
 			return true;			
 		}

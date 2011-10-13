@@ -20,30 +20,33 @@ require_once(BASE_PATH . DIRECTORY_SEPARATOR . 'core' . DIRECTORY_SEPARATOR . 'A
  */
 spl_autoload_register(function ($className) {
         $paths = array(
-            BASE_PATH
+            BASE_PATH . DIRECTORY_SEPARATOR . 'config',
+            BASE_PATH . DIRECTORY_SEPARATOR . 'core',
+            BASE_PATH . DIRECTORY_SEPARATOR . 'handlers',
+            BASE_PATH . DIRECTORY_SEPARATOR . 'dependences',
         );
 
-        $asadooName = preg_replace('/(\\\)?asadoo/', '', $className);
-        $asadooName = preg_replace('/(\\\|\/)+/', DIRECTORY_SEPARATOR, $asadooName);
+        $asadooName = preg_replace('/(\\\)?asadoo\\\/', '', $className);
 
         foreach ($paths as $path) {
             $file = $path . DIRECTORY_SEPARATOR . $asadooName . '.php';
 
-            if (file_exists($file)) {
+            if (file_exists($file) && !is_dir($file)) {
                 require_once($file);
                 return true;
             }
         }
 
         // Project files
-        foreach (\asadoo\core\asadoo::getInstance()->config->get('project_autoload_paths', array()) as $path) {
+        foreach (\asadoo\Asadoo::getInstance()->config->get('project_autoload_paths', array()) as $path) {
             $file = PROJECT_PATH . DIRECTORY_SEPARATOR . $path . DIRECTORY_SEPARATOR . $className . '.php';
 
-            if (file_exists($file)) {
+            if (file_exists($file) && !is_dir($file)) {
                 require_once($file);
                 return true;
             }
         }
+        
 
         return false;
     });
@@ -66,5 +69,5 @@ set_exception_handler(
 );
 
 // TODO merge project and asadoo configs
-\asadoo\core\Asadoo::load('config/config.php');
-\asadoo\core\Asadoo::load('config/constants.php');
+\asadoo\Asadoo::load('config/config.php');
+\asadoo\Asadoo::load('config/constants.php');

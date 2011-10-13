@@ -1,6 +1,5 @@
 <?php
-namespace asadoo\handlers;
-use \asadoo\core;
+namespace asadoo;
 use Closure;
 
 /**
@@ -8,7 +7,7 @@ use Closure;
  *      // stuff
  * })
  */
-class GenericPostHandler implements \asadoo\core\IHandler {
+class GenericPostHandler implements IHandler {
     protected $path;
     protected $handler;
     
