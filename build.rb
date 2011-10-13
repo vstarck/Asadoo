@@ -16,7 +16,7 @@ files_names = [
     'init.php'
 ]
 
-digested = "<?php\nnamespace asadoo;\nuse Closure;\nuse Exception;\nuse ErrorException;"
+digested = "<?php\nnamespace asadoo;\nuse Closure;\nuse Exception;\nuse ErrorException;\n"
 files_names.each do |file_name|
     content = IO.read "src/#{file_name}"
 
@@ -24,11 +24,15 @@ files_names.each do |file_name|
     content.gsub!(/^namespace[\sa-z\d]+;/i, '')
     content.gsub!(/^use[^;]+;/, '')
     content.gsub!(/^require[^;]+;/, '')
+    content.gsub!(/^\s*\/\/.+/, '')
+    content.gsub!(/\/\*\*?[^\/]+\*\//m, '')
+    content.gsub!(/\/\*(.*?)\*\//m, '')
+    content.gsub!(/\s*\n+/, "\n")
 
-    digested += content
+    digested += content.strip
     digested += "\n"
 end
 
-filename = 'dist/index.php'
-File.open(filename, "w") { |file| file.write(digested) }
+filename = 'dist/asadoo.php'
+File.open(filename, "w") { |file| file.write(digested.strip) }
 puts "Created #{filename}"
