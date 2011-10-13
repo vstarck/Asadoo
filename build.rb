@@ -5,6 +5,7 @@ files_names = [
     'core/IHandler.php',
     'core/Request.php',
     'core/Response.php',
+    'config/constants.php',
     'dependences/Config.php',
     'dependences/FileCache.php',
     'dependences/Logger.php',
@@ -15,13 +16,14 @@ files_names = [
     'init.php'
 ]
 
-digested = "<?php\nnamespace asadoo;\nuse Closure;\nuse Exception;"
+digested = "<?php\nnamespace asadoo;\nuse Closure;\nuse Exception;\nuse ErrorException;"
 files_names.each do |file_name|
     content = IO.read "src/#{file_name}"
 
     content.gsub!(/<\?php/, '')
     content.gsub!(/^namespace[\sa-z\d]+;/i, '')
     content.gsub!(/^use[^;]+;/, '')
+    content.gsub!(/^require[^;]+;/, '')
 
     digested += content
     digested += "\n"

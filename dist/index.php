@@ -2,6 +2,7 @@
 namespace asadoo;
 use Closure;
 use Exception;
+use ErrorException;
 
 
 
@@ -464,6 +465,13 @@ class Response {
 }
 
 
+define('ASSET_URI_SEGMENT', 'asset');
+define('JS_URI_SEGMENT', 'js');
+define('CSS_URI_SEGMENT', 'css');
+define('CACHE_CONTROL_NONE', 0);
+define('CACHE_CONTROL_FOREVER', 1);
+
+
 
 class Config {
     public function set($config) {
@@ -655,7 +663,7 @@ class GenericPostHandler implements IHandler {
 define('BASE_URL', dirname($_SERVER["SCRIPT_NAME"]));
 define('BASE_PATH', realpath(__DIR__));
 
-require_once(BASE_PATH . DIRECTORY_SEPARATOR . 'core' . DIRECTORY_SEPARATOR . 'Asadoo.php');
+
 
 /**
  * Autoloader
