@@ -15,10 +15,16 @@ files_names = [
     'init.php'
 ]
 
-digested = '<?php'
+digested = "<?php\nnamespace asadoo;\nuse Closure;\nuse Exception;"
 files_names.each do |file_name|
-  digested += (IO.read "src/#{file_name}").gsub /<\?php/, ''
-  digested += "\n\n"
+    content = IO.read "src/#{file_name}"
+
+    content.gsub!(/<\?php/, '')
+    content.gsub!(/^namespace[\sa-z\d]+;/i, '')
+    content.gsub!(/^use[^;]+;/, '')
+
+    digested += content
+    digested += "\n"
 end
 
 filename = 'dist/index.php'

@@ -1,5 +1,9 @@
 <?php
-namespace asadoo\core;
+namespace asadoo;
+use Closure;
+use Exception;
+
+
 
 final class Asadoo {
     private static $instance;
@@ -16,14 +20,14 @@ final class Asadoo {
         $this->register(
             'file_cache',
             $container->asShared(function() {
-                    return \asadoo\dependences\FileCache::getInstance();
+                    return \asadoo\FileCache::getInstance();
                 }
             )
         );
         $this->register(
             'config',
             $container->asShared(function() {
-                    return new \asadoo\dependences\Config;
+                    return new \asadoo\Config;
                 }
             )
         );
@@ -150,8 +154,7 @@ final class Asadoo {
 }
 
 
-namespace asadoo\core;
-use Closure;
+
 
 interface IHandler {
     /**
@@ -173,8 +176,6 @@ interface IHandler {
 }
 
 
-namespace asadoo\core;
-
 /**
  * @author Valentin Starck
  */
@@ -189,7 +190,7 @@ class Request {
     /**
      * @var bool
      */
-    private $active;
+    private $active = true;
 
     private static $instance;
 
@@ -349,7 +350,6 @@ class Request {
 }
 
 
-namespace asadoo\core;
 
 /**
  * Agrupa las funcionalidades relacionadas al
@@ -464,7 +464,6 @@ class Response {
 }
 
 
-namespace asadoo\dependences;
 
 class Config {
     public function set($config) {
@@ -478,7 +477,6 @@ class Config {
 
 
 
-namespace asadoo\dependences;
  
 class FileCache {
 	private static $instance;
@@ -511,17 +509,16 @@ class FileCache {
 
 
 
+
 class Logger {
 
 }
 
 
 
-namespace asadoo\handlers;
-use \asadoo\core;
-use Closure;
 
-abstract class AbstractFileHandler implements \asadoo\core\IHandler {
+
+abstract class AbstractFileHandler implements IHandler {
 	protected $path = null;
 		
 	public function __construct($path = null) {		
@@ -532,7 +529,7 @@ abstract class AbstractFileHandler implements \asadoo\core\IHandler {
 		return $this->path . DIRECTORY_SEPARATOR . $file;
 	}
 	
-	public function handle(core\Request $request, core\Response $response, \Closure $container) {
+	public function handle(Request $request, Response $response, Closure $container) {
 		if($request->lastSegment() == 'box') {
 			// Concatenados		
 			$content = $this->getMultipleFileContent($request->get('files', ''));
@@ -549,8 +546,8 @@ abstract class AbstractFileHandler implements \asadoo\core\IHandler {
 		$response->setMimeType($this->getMimeType());
 		$response->setBody($content);
 		$response->display();
-        
-		return false;
+		
+		$request->end();
 	}
 
 	protected function getFileContent($file) {
@@ -579,16 +576,14 @@ abstract class AbstractFileHandler implements \asadoo\core\IHandler {
 }
 
 
-namespace asadoo\handlers;
-use \asadoo\core;
-use Closure;
 
-class GenericCSSHandler extends AbstractFileHandler implements \asadoo\core\IHandler {
+
+class GenericCSSHandler extends AbstractFileHandler implements IHandler {
 	public function __construct($path = null) {
 		parent::__construct($path);
 	}
 	
-	public function accept(core\Request $request, Closure $container) {
+	public function accept(Request $request, Closure $container) {
 		if($request->segment(0) == CSS_URI_SEGMENT) {
 			return true;			
 		}
@@ -601,16 +596,14 @@ class GenericCSSHandler extends AbstractFileHandler implements \asadoo\core\IHan
 }
 
 
-namespace asadoo\handlers;
-use \asadoo\core;
-use Closure;
 
-class GenericJSHandler extends AbstractFileHandler implements \asadoo\core\IHandler {
+
+class GenericJSHandler extends AbstractFileHandler implements IHandler {
 	public function __construct($path = null) {
 		parent::__construct($path);
 	}
 	
-	public function accept(core\Request $request, Closure $container) {
+	public function accept(Request $request, Closure $container) {
 		if($request->segment(0) == JS_URI_SEGMENT) {
 			return true;			
 		}
@@ -623,16 +616,14 @@ class GenericJSHandler extends AbstractFileHandler implements \asadoo\core\IHand
 }
 
 
-namespace asadoo\handlers;
-use \asadoo\core;
-use Closure;
+
 
 /**
  * new GenericPostHandler('/user/save', function($request, $response) {
  *      // stuff
  * })
  */
-class GenericPostHandler implements \asadoo\core\IHandler {
+class GenericPostHandler implements IHandler {
     protected $path;
     protected $handler;
     
@@ -651,7 +642,6 @@ class GenericPostHandler implements \asadoo\core\IHandler {
         }
     }
 }
-
 
 
 /*
@@ -675,30 +665,33 @@ require_once(BASE_PATH . DIRECTORY_SEPARATOR . 'core' . DIRECTORY_SEPARATOR . 'A
  */
 spl_autoload_register(function ($className) {
         $paths = array(
-            BASE_PATH
+            BASE_PATH . DIRECTORY_SEPARATOR . 'config',
+            BASE_PATH . DIRECTORY_SEPARATOR . 'core',
+            BASE_PATH . DIRECTORY_SEPARATOR . 'handlers',
+            BASE_PATH . DIRECTORY_SEPARATOR . 'dependences',
         );
 
-        $asadooName = preg_replace('/(\\\)?asadoo/', '', $className);
-        $asadooName = preg_replace('/(\\\|\/)+/', DIRECTORY_SEPARATOR, $asadooName);
+        $asadooName = preg_replace('/(\\\)?asadoo\\\/', '', $className);
 
         foreach ($paths as $path) {
             $file = $path . DIRECTORY_SEPARATOR . $asadooName . '.php';
 
-            if (file_exists($file)) {
+            if (file_exists($file) && !is_dir($file)) {
                 require_once($file);
                 return true;
             }
         }
 
         // Project files
-        foreach (\asadoo\core\asadoo::getInstance()->config->get('project_autoload_paths', array()) as $path) {
+        foreach (\asadoo\Asadoo::getInstance()->config->get('project_autoload_paths', array()) as $path) {
             $file = PROJECT_PATH . DIRECTORY_SEPARATOR . $path . DIRECTORY_SEPARATOR . $className . '.php';
 
-            if (file_exists($file)) {
+            if (file_exists($file) && !is_dir($file)) {
                 require_once($file);
                 return true;
             }
         }
+        
 
         return false;
     });
@@ -721,7 +714,6 @@ set_exception_handler(
 );
 
 // TODO merge project and asadoo configs
-\asadoo\core\Asadoo::load('config/config.php');
-\asadoo\core\Asadoo::load('config/constants.php');
-
+\asadoo\Asadoo::load('config/config.php');
+\asadoo\Asadoo::load('config/constants.php');
 
