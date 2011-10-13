@@ -15,7 +15,7 @@ class Request {
     /**
      * @var bool
      */
-    private $active;
+    private $active = true;
 
     private static $instance;
 
