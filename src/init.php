@@ -67,7 +67,4 @@ set_exception_handler(
         echo 'Line: ' . $exception->getLine() . "\n";
     }
 );
-
-// TODO merge project and asadoo configs
-\asadoo\Asadoo::load('config/config.php');
 \asadoo\Asadoo::load('config/constants.php');

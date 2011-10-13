@@ -22,7 +22,11 @@ if(!isset($config['asadoo_path'])) {
 
 define('PROJECT_PATH', dirname(__FILE__));
 
-require_once('..' . DIRECTORY_SEPARATOR . '..' . DIRECTORY_SEPARATOR . 'dist' . DIRECTORY_SEPARATOR . 'asadoo.php');
+// Use digested
+//require_once('..' . DIRECTORY_SEPARATOR . '..' . DIRECTORY_SEPARATOR . 'dist' . DIRECTORY_SEPARATOR . 'asadoo.php');
+
+// Use complex
+require_once('..' . DIRECTORY_SEPARATOR . '..' . DIRECTORY_SEPARATOR . 'src' . DIRECTORY_SEPARATOR . 'init.php');
 
 //---------------------------------------------------------------------------------------------------------------------
 
