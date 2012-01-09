@@ -10,6 +10,9 @@
     <script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
     <![endif]-->
 
+
+    <link rel="stylesheet" type="text/css" href="/css/box/?files=/css/twitter_bootstrap/twitter_bootstrap/bootstrap.min.css,/css/style.css"/>
+
     <link rel="stylesheet" type="text/css" href="/css/twitter_bootstrap/bootstrap.min.css"/>
     <link rel="stylesheet" type="text/css" href="/css/style.css"/>
 </head>

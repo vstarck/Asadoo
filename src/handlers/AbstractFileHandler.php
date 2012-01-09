@@ -17,6 +17,8 @@ abstract class AbstractFileHandler implements IHandler {
 		if($request->lastSegment() == 'box') {
 			// Concatenados		
 			$content = $this->getMultipleFileContent($request->get('files', ''));
+            print_r($request->get('files', ''));
+            die();
 		} else {
 			// Simples
 			$content = $this->getFileContent($request->uriTail());

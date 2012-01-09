@@ -47,10 +47,10 @@ require_once('..' . DIRECTORY_SEPARATOR . '..' . DIRECTORY_SEPARATOR . 'src' . D
         // Send foo
         return 'foo';
     },
-	// Use a generic handler to serve js files
-	new \asadoo\GenericJSHandler(PROJECT_PATH . DIRECTORY_SEPARATOR . 'js'),
 	// Use a generic handler to serve css files
 	new \asadoo\GenericCSSHandler(PROJECT_PATH . DIRECTORY_SEPARATOR . 'css'),
+	// Use a generic handler to serve js files
+	new \asadoo\GenericJSHandler(PROJECT_PATH . DIRECTORY_SEPARATOR . 'js'),
 	new DocumentationHandler,
 	new CatchAllHandler
 )->start();
