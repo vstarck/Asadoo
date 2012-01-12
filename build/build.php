@@ -32,4 +32,17 @@ $builder->
 // Enjoy!
 $builder->process();
 
-echo $builder->result();
+//echo $builder->result();
+?>
+<html>
+    <head>
+        <title>Builder</title>
+    </head>
+    <script>
+        setTimeout(function() {
+            window.location.reload();
+        }, 5000);
+    </script>
+</html>
+
+
