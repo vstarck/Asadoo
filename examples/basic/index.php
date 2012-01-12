@@ -12,13 +12,13 @@ asadoo()
 	})
 	->close();
 
-/*
+
 asadoo()
 	->on('*')
 	->handle(function($request, $response, $dependences) {
 		$response->header404();
 		$response->send('404');
 	})
-	->close();*/
+	->close();
 
 asadoo()->start();
