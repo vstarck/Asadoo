@@ -2,6 +2,7 @@
 class AsadooCore {
 	private static $instance;
 	private $handlers = array();
+    private $interrupted = false;
 
 	private function __construct() {
 		$this->createRequest();
@@ -25,6 +26,10 @@ class AsadooCore {
 		$dependences = $this->dependences;
 
 		foreach($this->handlers as $handler) {
+		    if($this->interrupted) {
+                break;
+		    }
+
 			if($this->match($handler->conditions)) {
 				$fn = $handler->fn;
 
@@ -43,6 +48,10 @@ class AsadooCore {
 	private function createDependences() {
 		$this->dependences = new AsadooDependences();
 	}
+
+    public function end() {
+        $this->interrupted = true;
+    }
 
 	private function match($conditions) {
 		foreach($conditions as $condition) {
