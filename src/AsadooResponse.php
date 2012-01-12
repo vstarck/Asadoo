@@ -1,5 +1,4 @@
 <?php
-
 class AsadooResponse {
 	// header...
 	public function __call($name, $arguments) {}

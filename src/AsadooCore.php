@@ -1,5 +1,4 @@
 <?php
-
 class AsadooCore {
 	private static $instance;
 	private $handlers = array();

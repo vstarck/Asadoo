@@ -4,6 +4,7 @@ class Builder {
     private $separator = '';
     private $content = '';
     private $base_path = '';
+    private $fn = null;
 
     private $added = 0;
     private $proccessed = 0;
@@ -70,9 +71,8 @@ class Builder {
         $file = $this->base_path . $file;
 
         if(is_readable($file) && !is_dir($file)) {
+            $this->content .= $this->applyFormat(file_get_contents($file), $file);
             $this->content .= $this->separator;
-            $this->content .= '// From file: ' . $file . PHP_EOL;
-            $this->content .= file_get_contents($file);
 
             $this->added++;
         }
@@ -114,5 +114,21 @@ class Builder {
 
     public function result() {
         return $this->added.'/'.$this->proccessed;
+    }
+
+    public function format($fn) {
+        $this->fn = $fn;
+
+        return $this;
+    }
+
+    public function applyFormat($content, $filename) {
+        if(!isset($this->fn)) {
+            return $content;
+        }
+
+        $fn = $this->fn;
+
+        return $fn($content, $filename);
     }
 }

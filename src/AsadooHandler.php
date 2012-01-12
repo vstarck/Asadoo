@@ -1,5 +1,4 @@
 <?php
-
 class AsadooHandler {
 	public $conditions = array();
 	public $fn;

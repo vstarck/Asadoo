@@ -1,5 +1,4 @@
 <?php
-
 class AsadooRequest {
 	private $variables = array();
 
