@@ -9,7 +9,8 @@ Asadoo - An experimental lightweight PHP framework/router
 
 Requires PHP 5.3+
 
-```perl
+```php
+<?php
 asadoo()
     ->on('/view/:id')
     ->on('/view')
