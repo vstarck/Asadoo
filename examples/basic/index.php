@@ -2,33 +2,81 @@
 
 include '../../dist/asadoo.php';
 
+// Fake dependences
 asadoo()->dependences()->register('config', (object) array(
     'version' => '0.2'
 ));
 
+class View {
+    public function load() {
+        return 'Fake load view!<br/>';
+    }
+}
+
+asadoo()->dependences()->register('view', function() {
+    return new View();
+});
+
+// Using dependences
 asadoo()
+    // All requests
+    ->on('*')
+    ->handle(function($request, $response, $dependences) {
+        $view = $dependences->view;
+
+        $response->send(
+            $view->load('/my/crazy/view.php')
+        );
+    });
+
+// Multiples rules
+asadoo()
+    // Capture by string rule
     ->on('/view/:id')
     ->on('/view')
+    // Functional capture, matchs /foo/bar/view/baz
+    ->on(function($request, $response, $dependences) {
+        return $request->has('view');
+    })
     ->handle(function($request, $response, $dependences) {
+        // Captured argument
         $id = $request->get('id', 'ID not found!');
 
-        $response->setResponseCode(203);
+        // Response body
         $response->send($id);
+
+        // No other handler will be invoked
+        $response->end();
+    });
+
+// Server error
+asadoo()
+    ->on('/error')
+    ->handle(function($request, $response, $dependences) {
+        // Server error!
+        $response->setResponseCode(500);
+
+        $response->send('Error!');
+
+        // No other handler will be invoked
         $response->end();
     });
 
 
+// 404 for everyone!
 asadoo()
+    // All requests
     ->on('*')
     ->handle(function($request, $response, $dependences) {
         $response->setResponseCode(404);
-/*
+
         $response->send('404');
         $response->send(
             '<br/>Asadoo ' .
             $dependences->config->version
-        );*/
+        );
         $response->end();
     });
 
+// Aaaaand, go!
 asadoo()->start();

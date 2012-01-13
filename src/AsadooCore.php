@@ -36,6 +36,10 @@ class AsadooCore {
 				$fn($request, $response, $dependences);
 			}
 		}
+
+		if(!$this->interrupted) {
+		    $response->end();
+		}
 	}
 
 	private function createRequest() {
@@ -86,6 +90,7 @@ class AsadooCore {
 		return false;
 	}
 
+    // TODO refactor
 	private function matchStringCondition($condition) {
 		$url = $this->request->url();
 

@@ -43,6 +43,10 @@ class AsadooCore {
 				$fn($request, $response, $dependences);
 			}
 		}
+
+		if(!$this->interrupted) {
+		    $response->end();
+		}
 	}
 
 	private function createRequest() {
@@ -93,6 +97,7 @@ class AsadooCore {
 		return false;
 	}
 
+    // TODO refactor
 	private function matchStringCondition($condition) {
 		$url = $this->request->url();
 
@@ -181,7 +186,10 @@ class AsadooRequest {
 	private $variables = array();
 
 	public function segment($index) {}
-	public function has($match) {}
+
+	public function has($match) {
+	    return strpos($this->url(), $match) !== false;
+	}
 
 	public function get($key, $fallback = null) {
 		if(isset($this->variables[$key])) {
@@ -274,6 +282,7 @@ class AsadooResponse {
     );
 
     public function __construct() {
+        ob_start();
     }
 
 	// header...
@@ -310,7 +319,7 @@ class AsadooResponse {
         AsadooCore::getInstance()->end();
 
         $this->sendResponseCode($this->code);
-       // ob_end_flush();
+        ob_end_flush();
     }
 
 

@@ -3,7 +3,10 @@ class AsadooRequest {
 	private $variables = array();
 
 	public function segment($index) {}
-	public function has($match) {}
+
+	public function has($match) {
+	    return strpos($this->url(), $match) !== false;
+	}
 
 	public function get($key, $fallback = null) {
 		if(isset($this->variables[$key])) {

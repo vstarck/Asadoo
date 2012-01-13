@@ -43,6 +43,7 @@ class AsadooResponse {
     );
 
     public function __construct() {
+        ob_start();
     }
 
 	// header...
@@ -79,7 +80,7 @@ class AsadooResponse {
         AsadooCore::getInstance()->end();
 
         $this->sendResponseCode($this->code);
-       // ob_end_flush();
+        ob_end_flush();
     }
 
 
