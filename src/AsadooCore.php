@@ -2,7 +2,7 @@
 class AsadooCore {
 	private static $instance;
 	private $handlers = array();
-    private $interrupted = false;
+    	private $interrupted = false;
 
 	private function __construct() {
 		$this->createRequest();
@@ -27,7 +27,7 @@ class AsadooCore {
 
 		foreach($this->handlers as $handler) {
 		    if($this->interrupted) {
-                break;
+                	break;
 		    }
 
 			if($this->match($handler->conditions)) {
@@ -53,9 +53,9 @@ class AsadooCore {
 		$this->dependences = new AsadooDependences();
 	}
 
-    public function end() {
-        $this->interrupted = true;
-    }
+    	public function end() {
+        	$this->interrupted = true;
+    	}
 
 	private function match($conditions) {
 		foreach($conditions as $condition) {
@@ -90,7 +90,7 @@ class AsadooCore {
 		return false;
 	}
 
-    // TODO refactor
+    	// TODO refactor
 	private function matchStringCondition($condition) {
 		$url = $this->request->url();
 
