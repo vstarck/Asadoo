@@ -4,7 +4,7 @@ class AsadooCore {
 	private $handlers = array();
 	private $interrupted = false;
     private $started = false;
-    
+
 	private function __construct() {
 		$this->createRequest();
 		$this->createResponse();

@@ -2,8 +2,6 @@
 class AsadooRequest {
 	private $variables = array();
 
-	public function segment($index) {}
-
 	public function has($match) {
 	    return strpos($this->url(), $match) !== false;
 	}
@@ -50,6 +48,13 @@ class AsadooRequest {
 	public function domain() {
 		return $_SERVER['SERVER_NAME'];
 	}
+
+    public function segment($index) {
+        $parts = explode('/', $_SERVER['REQUEST_URI']);
+        array_shift($parts);
+
+        return isset($parts[$index]) ? $parts[$index] : null;
+    }
 
 	public function ip() {}
 }

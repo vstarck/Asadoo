@@ -46,11 +46,6 @@ class AsadooResponse {
         ob_start();
     }
 
-	// header...
-	/*public function __call($name, $arguments) {
-
-	}*/
-
 	private function sendResponseCode($code) {
 	    if(isset($this->codes[$code])) {
             $this->header('HTTP/1.0', $code . ' ' .$this->codes[$code]);
@@ -82,6 +77,4 @@ class AsadooResponse {
         $this->sendResponseCode($this->code);
         ob_end_flush();
     }
-
-
 }
