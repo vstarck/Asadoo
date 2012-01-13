@@ -9,7 +9,7 @@ asadoo()->dependences()->register('config', (object) array(
 
 class View {
     public function load() {
-        return 'Fake load view!<br/>';
+        return 'Fake load view!<br/><br/>';
     }
 }
 
@@ -57,6 +57,19 @@ asadoo()
         $response->setResponseCode(500);
 
         $response->send('Error!');
+
+        // No other handler will be invoked
+        $response->end();
+    });
+
+// Segments
+asadoo()
+    ->on('/segment/*')
+    ->handle(function($request, $response, $dependences) {
+        $index = 0;
+        while($segment = $request->segment($index++)) {
+            $response->send('Segment ' . $index . ': ' . $segment . '<br/>');
+        }
 
         // No other handler will be invoked
         $response->end();
