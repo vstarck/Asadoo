@@ -3,7 +3,9 @@
 |       ||__ --|  _  |  _  ||  _  |  _  |
 |___|___||_____|___._|_____||_____|_____|
 
-Asadoo
+Asadoo - An experimental lightweight PHP framework/router
+
+Requires PHP 5.3
 
 Copyright (c) 2011 Valentin Starck
 
