@@ -3,7 +3,8 @@ class AsadooCore {
 	private static $instance;
 	private $handlers = array();
 	private $interrupted = false;
-
+    private $started = false;
+    
 	private function __construct() {
 		$this->createRequest();
 		$this->createResponse();
@@ -21,9 +22,11 @@ class AsadooCore {
 	}
 
 	public function start() {
-		$request = $this->request;
-		$response = $this->response;
-		$dependences = $this->dependences;
+	    if($this->started) {
+	        return;
+	    }
+
+	    $this->started = true;
 
 		foreach($this->handlers as $handler) {
 			if($this->interrupted) {
@@ -32,12 +35,12 @@ class AsadooCore {
 			
 			if($this->match($handler->conditions)) {
 				$fn = $handler->fn;			
-				$fn($request, $response, $dependences);
+				$fn($this->request, $this->response, $this->dependences);
 			}
 		}
 
 		if(!$this->interrupted) {
-		    $response->end();
+		    $this->response->end();
 		}
 	}
 
@@ -95,6 +98,7 @@ class AsadooCore {
 
 		$keys = array();
 
+        $condition = str_replace('*', '.*', $condition);
 		$condition = preg_replace('/\//', '\/', $condition) . '$';
 
 		while(strpos($condition, ':') !== false) {
