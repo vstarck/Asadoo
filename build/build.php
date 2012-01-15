@@ -32,7 +32,6 @@ $builder->
 // Enjoy!
 $builder->process();
 
-//echo $builder->result();
 ?>
 <html>
     <head>
@@ -43,6 +42,9 @@ $builder->process();
             window.location.reload();
         }, 5000);
     </script>
+    <body>
+        <h1>Proccesed: <?php echo $builder->result() ?></h1>
+    </body>
 </html>
 
 
