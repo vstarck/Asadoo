@@ -26,7 +26,7 @@ asadoo()
         $response->end();
     });
 
-// Using dependences
+// Index
 asadoo()
     // All requests
     ->on('*')
