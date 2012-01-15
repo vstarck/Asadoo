@@ -9,7 +9,8 @@
 class AsadooCore {
 	private static $instance;
 	private $handlers = array();
-    private $interrupted = false;
+	private $interrupted = false;
+    private $started = false;
 
 	private function __construct() {
 		$this->createRequest();
@@ -28,24 +29,25 @@ class AsadooCore {
 	}
 
 	public function start() {
-		$request = $this->request;
-		$response = $this->response;
-		$dependences = $this->dependences;
+	    if($this->started) {
+	        return;
+	    }
+
+	    $this->started = true;
 
 		foreach($this->handlers as $handler) {
-		    if($this->interrupted) {
-                break;
-		    }
-
+			if($this->interrupted) {
+				break;
+			}
+			
 			if($this->match($handler->conditions)) {
-				$fn = $handler->fn;
-
-				$fn($request, $response, $dependences);
+				$fn = $handler->fn;			
+				$fn($this->request, $this->response, $this->dependences);
 			}
 		}
 
 		if(!$this->interrupted) {
-		    $response->end();
+		    $this->response->end();
 		}
 	}
 
@@ -60,9 +62,9 @@ class AsadooCore {
 		$this->dependences = new AsadooDependences();
 	}
 
-    public function end() {
-        $this->interrupted = true;
-    }
+	public function end() {
+    	$this->interrupted = true;
+	}
 
 	private function match($conditions) {
 		foreach($conditions as $condition) {
@@ -97,22 +99,23 @@ class AsadooCore {
 		return false;
 	}
 
-    // TODO refactor
+	// TODO refactor
 	private function matchStringCondition($condition) {
 		$url = $this->request->url();
 
 		$keys = array();
 
+        $condition = str_replace('*', '.*', $condition);
 		$condition = preg_replace('/\//', '\/', $condition) . '$';
 
 		while(strpos($condition, ':') !== false) {
 			$matches = array();
 
-			preg_match('/:(\w+)/', $condition, $matches);
+			if(preg_match('/:(\w+)/', $condition, $matches)) {
+                $keys[] = $matches[1];
 
-			$keys[] = $matches[1];
-
-			$condition = preg_replace('/:\w+/', '([^\/\?\#]+)', $condition);
+                $condition = preg_replace('/:\w+/', '([^\/\?\#]+)', $condition, 1);
+			}
 		}
 
 		$values = array();
@@ -185,8 +188,6 @@ class AsadooDependences {
 class AsadooRequest {
 	private $variables = array();
 
-	public function segment($index) {}
-
 	public function has($match) {
 	    return strpos($this->url(), $match) !== false;
 	}
@@ -233,6 +234,13 @@ class AsadooRequest {
 	public function domain() {
 		return $_SERVER['SERVER_NAME'];
 	}
+
+    public function segment($index) {
+        $parts = explode('/', $_SERVER['REQUEST_URI']);
+        array_shift($parts);
+
+        return isset($parts[$index]) ? $parts[$index] : null;
+    }
 
 	public function ip() {}
 }
@@ -285,11 +293,6 @@ class AsadooResponse {
         ob_start();
     }
 
-	// header...
-	/*public function __call($name, $arguments) {
-
-	}*/
-
 	private function sendResponseCode($code) {
 	    if(isset($this->codes[$code])) {
             $this->header('HTTP/1.0', $code . ' ' .$this->codes[$code]);
@@ -311,8 +314,12 @@ class AsadooResponse {
         header($key . ' ' . $value);
 	}
 
-	public function send($content) {
-		echo $content;
+	public function send() {
+	    $arguments = func_get_args();
+
+	    foreach($arguments as $arg) {
+            echo $arg;
+	    }
 	}
 
     public function end() {
@@ -321,8 +328,6 @@ class AsadooResponse {
         $this->sendResponseCode($this->code);
         ob_end_flush();
     }
-
-
 }
 // From file: ../src/AsadooHandler.php
 
@@ -361,4 +366,3 @@ class AsadooHandler {
 		AsadooCore::getInstance()->add($handler);
 	}
 }
-
