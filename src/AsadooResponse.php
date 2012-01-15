@@ -67,8 +67,12 @@ class AsadooResponse {
         header($key . ' ' . $value);
 	}
 
-	public function send($content) {
-		echo $content;
+	public function send() {
+	    $arguments = func_get_args();
+
+	    foreach($arguments as $arg) {
+            echo $arg;
+	    }
 	}
 
     public function end() {

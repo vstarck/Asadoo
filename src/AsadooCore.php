@@ -104,11 +104,11 @@ class AsadooCore {
 		while(strpos($condition, ':') !== false) {
 			$matches = array();
 
-			preg_match('/:(\w+)/', $condition, $matches);
+			if(preg_match('/:(\w+)/', $condition, $matches)) {
+                $keys[] = $matches[1];
 
-			$keys[] = $matches[1];
-
-			$condition = preg_replace('/:\w+/', '([^\/\?\#]+)', $condition);
+                $condition = preg_replace('/:\w+/', '([^\/\?\#]+)', $condition, 1);
+			}
 		}
 
 		$values = array();
