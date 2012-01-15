@@ -71,7 +71,7 @@ class Builder {
         $file = $this->base_path . $file;
 
         if(is_readable($file) && !is_dir($file)) {
-            $this->content .= $this->applyFormat(file_get_contents($file), $file);
+            $this->content .= $this->apply_format(file_get_contents($file), $file);
             $this->content .= $this->separator;
 
             $this->added++;
@@ -127,8 +127,8 @@ class Builder {
             return $content;
         }
 
-        $fn = $this->fn;
+        $formatter = $this->formatter;
 
-        return $fn($content, $filename);
+        return $formatter($content, $filename);
     }
 }
