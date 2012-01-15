@@ -4,7 +4,7 @@ class Builder {
     private $separator = '';
     private $content = '';
     private $base_path = '';
-    private $fn = null;
+    private $formatter = null;
 
     private $added = 0;
     private $proccessed = 0;
@@ -116,14 +116,14 @@ class Builder {
         return $this->added.'/'.$this->proccessed;
     }
 
-    public function format($fn) {
-        $this->fn = $fn;
+    public function format($formatter) {
+        $this->formatter = $formatter;
 
         return $this;
     }
 
-    public function applyFormat($content, $filename) {
-        if(!isset($this->fn)) {
+    public function apply_format($content, $filename) {
+        if(!isset($this->formatter)) {
             return $content;
         }
 
