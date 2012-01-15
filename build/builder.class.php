@@ -37,7 +37,7 @@ class Builder {
         $subdirectories = $this->get_directory_directories($path);
 
         foreach($subdirectories as $dir) {
-            $this->add_directory($path);
+            $this->add_directory($dir);
         }
 
         return $this;
