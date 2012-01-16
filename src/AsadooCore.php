@@ -62,12 +62,14 @@ class AsadooCore {
     }
 
     private function match($conditions) {
+        $matches = true;
         foreach ($conditions as $condition) {
-            if ($this->matchCondition($condition)) {
-                return true;
+            if (!$this->matchCondition($condition)) {
+                $matches = false;
+                break;
             }
         }
-        return false;
+        return $matches;
     }
 
     private function matchCondition($condition) {
