@@ -20,7 +20,7 @@ class Builder {
     }
 
     public function add_files($files) {
-        foreach($files as $file) {
+        foreach ($files as $file) {
             $this->add($file);
         }
 
@@ -36,7 +36,7 @@ class Builder {
 
         $subdirectories = $this->get_directory_directories($path);
 
-        foreach($subdirectories as $dir) {
+        foreach ($subdirectories as $dir) {
             $this->add_directory($dir);
         }
 
@@ -56,11 +56,11 @@ class Builder {
     public function process() {
         $path = $this->dest;
 
-        if(!is_writable($path)) {
+        if (!is_writable($path)) {
             // error
         }
 
-        if(!file_put_contents($path, $this->content)) {
+        if (!file_put_contents($path, $this->content)) {
             // error
         }
 
@@ -70,7 +70,7 @@ class Builder {
     private function add($file) {
         $file = $this->base_path . $file;
 
-        if(is_readable($file) && !is_dir($file)) {
+        if (is_readable($file) && !is_dir($file)) {
             $this->content .= $this->apply_format(file_get_contents($file), $file);
             $this->content .= $this->separator;
 
@@ -83,14 +83,14 @@ class Builder {
     }
 
     private function get_directory_files($dir) {
-        if(!is_dir($dir)) {
+        if (!is_dir($dir)) {
             return array();
         }
 
         $dh = opendir($dir);
         $files = array();
         while (($file = readdir($dh)) !== false) {
-            if($file !== '.' && $file !== '..' && !is_dir($file)) {
+            if ($file !== '.' && $file !== '..' && !is_dir($file)) {
                 $files[] = $dir . DIRECTORY_SEPARATOR . $file;
             }
         }
@@ -98,14 +98,14 @@ class Builder {
     }
 
     private function get_directory_directories($dir) {
-        if(!is_dir($dir)) {
+        if (!is_dir($dir)) {
             return array();
         }
 
         $dh = opendir($dir);
         $dirs = array();
         while (($file = readdir($dh)) !== false) {
-            if($file !== '.' && $file !== '..' && is_dir($file)) {
+            if ($file !== '.' && $file !== '..' && is_dir($file)) {
                 $dirs[] = $dir . DIRECTORY_SEPARATOR . $file;
             }
         }
@@ -113,7 +113,7 @@ class Builder {
     }
 
     public function result() {
-        return $this->added.'/'.$this->proccessed;
+        return $this->added . '/' . $this->proccessed;
     }
 
     public function format($formatter) {
@@ -123,7 +123,7 @@ class Builder {
     }
 
     public function apply_format($content, $filename) {
-        if(!isset($this->formatter)) {
+        if (!isset($this->formatter)) {
             return $content;
         }
 

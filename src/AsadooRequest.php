@@ -1,53 +1,53 @@
 <?php
 class AsadooRequest {
-	private $variables = array();
+    private $variables = array();
 
-	public function has($match) {
-	    return strpos($this->url(), $match) !== false;
-	}
+    public function has($match) {
+        return strpos($this->url(), $match) !== false;
+    }
 
-	public function get($key, $fallback = null) {
-		if(isset($this->variables[$key])) {
-			return $this->variables[$key];
-		}
+    public function get($key, $fallback = null) {
+        if (isset($this->variables[$key])) {
+            return $this->variables[$key];
+        }
 
-		if(isset($_REQUEST[$key])) {
-			return $_REQUEST[$key];
-		}
+        if (isset($_REQUEST[$key])) {
+            return $_REQUEST[$key];
+        }
 
-		return $fallback;
-	}
+        return $fallback;
+    }
 
-	public function set($key, $value = null) {
-		if(is_array($key)) {
-			foreach($key as $k => $v) {
-				$this->set($k, $v);
-			}
-			return;
-		}
+    public function set($key, $value = null) {
+        if (is_array($key)) {
+            foreach ($key as $k => $v) {
+                $this->set($k, $v);
+            }
+            return;
+        }
 
-		$this->variables[$key] = $value;
+        $this->variables[$key] = $value;
 
-		return $value;
-	}
+        return $value;
+    }
 
-	public function isPost() {
-		return $_SERVER['REQUEST_METHOD'] == 'POST';
-	}
+    public function isPost() {
+        return $_SERVER['REQUEST_METHOD'] == 'POST';
+    }
 
-	public function url() {
-		$url = $this->domain() . $_SERVER['REQUEST_URI'];
+    public function url() {
+        $url = $this->domain() . $_SERVER['REQUEST_URI'];
 
-		if(substr($url, -1, 1) == '/') {
-			$url = substr($url, 0, -1);
-		}
+        if (substr($url, -1, 1) == '/') {
+            $url = substr($url, 0, -1);
+        }
 
-		return $url;
-	}
+        return $url;
+    }
 
-	public function domain() {
-		return $_SERVER['SERVER_NAME'];
-	}
+    public function domain() {
+        return $_SERVER['SERVER_NAME'];
+    }
 
     public function segment($index) {
         $parts = explode('/', $_SERVER['REQUEST_URI']);
@@ -56,5 +56,6 @@ class AsadooRequest {
         return isset($parts[$index]) ? $parts[$index] : null;
     }
 
-	public function ip() {}
+    public function ip() {
+    }
 }

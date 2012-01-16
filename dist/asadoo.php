@@ -7,139 +7,141 @@
 // From file: ../src/AsadooCore.php
 
 class AsadooCore {
-	private static $instance;
-	private $handlers = array();
-	private $interrupted = false;
+    private static $instance;
+    private $handlers = array();
+    private $interrupted = false;
     private $started = false;
 
-	private function __construct() {
-		$this->createRequest();
-		$this->createResponse();
-		$this->createDependences();
-	}
+    private function __construct() {
+        $this->createRequest();
+        $this->createResponse();
+        $this->createDependences();
+    }
 
-	private function __clone() {}
+    private function __clone() {
+    }
 
-	public static function getInstance() {
-		return self::$instance ? self::$instance : (self::$instance = new self());
-	}
+    public static function getInstance() {
+        return self::$instance ? self::$instance : (self::$instance = new self());
+    }
 
-	public function add($handler) {
-		$this->handlers[] = $handler;
-	}
+    public function add($handler) {
+        $this->handlers[] = $handler;
+    }
 
-	public function start() {
-	    if($this->started) {
-	        return;
-	    }
+    public function start() {
+        if ($this->started) {
+            return;
+        }
 
-	    $this->started = true;
+        $this->started = true;
 
-		foreach($this->handlers as $handler) {
-			if($this->interrupted) {
-				break;
-			}
-			
-			if($this->match($handler->conditions)) {
-				$fn = $handler->fn;			
-				$fn($this->request, $this->response, $this->dependences);
-			}
-		}
+        foreach ($this->handlers as $handler) {
+            if ($this->interrupted) {
+                break;
+            }
 
-		if(!$this->interrupted) {
-		    $this->response->end();
-		}
-	}
+            if ($this->match($handler->conditions)) {
+                $fn = $handler->fn;
+                $fn($this->request, $this->response, $this->dependences);
+            }
+        }
 
-	private function createRequest() {
-		$this->request = new AsadooRequest();
-	}
+        if (!$this->interrupted) {
+            $this->response->end();
+        }
+    }
 
-	private function createResponse() {
-		$this->response = new AsadooResponse();
-	}
-	private function createDependences() {
-		$this->dependences = new AsadooDependences();
-	}
+    private function createRequest() {
+        $this->request = new AsadooRequest();
+    }
 
-	public function end() {
-    	$this->interrupted = true;
-	}
+    private function createResponse() {
+        $this->response = new AsadooResponse();
+    }
 
-	private function match($conditions) {
-		foreach($conditions as $condition) {
-			if($this->matchCondition($condition)) {
-				return true;
-			}
-		}
-		return false;
-	}
+    private function createDependences() {
+        $this->dependences = new AsadooDependences();
+    }
 
-	private function matchCondition($condition) {
-		$request = $this->request;
-		$response = $this->response;
-		$dependences = $this->dependences;
+    public function end() {
+        $this->interrupted = true;
+    }
 
-		if(is_callable($condition)) {
-			if($condition($request, $response, $dependences)) {
-				return true;
-			}
-		}
+    private function match($conditions) {
+        foreach ($conditions as $condition) {
+            if ($this->matchCondition($condition)) {
+                return true;
+            }
+        }
+        return false;
+    }
 
-		if(is_string($condition)) {
-			if(trim($condition) == '*') {
-				return true;
-			}
+    private function matchCondition($condition) {
+        $request = $this->request;
+        $response = $this->response;
+        $dependences = $this->dependences;
 
-			if($this->matchStringCondition($condition)) {
-				return true;
-			}
-		}
+        if (is_callable($condition)) {
+            if ($condition($request, $response, $dependences)) {
+                return true;
+            }
+        }
 
-		return false;
-	}
+        if (is_string($condition)) {
+            if (trim($condition) == '*') {
+                return true;
+            }
 
-	// TODO refactor
-	private function matchStringCondition($condition) {
-		$url = $this->request->url();
+            if ($this->matchStringCondition($condition)) {
+                return true;
+            }
+        }
 
-		$keys = array();
+        return false;
+    }
+
+    // TODO refactor
+    private function matchStringCondition($condition) {
+        $url = $this->request->url();
+
+        $keys = array();
 
         $condition = str_replace('*', '.*', $condition);
-		$condition = preg_replace('/\//', '\/', $condition) . '$';
+        $condition = preg_replace('/\//', '\/', $condition) . '$';
 
-		while(strpos($condition, ':') !== false) {
-			$matches = array();
+        while (strpos($condition, ':') !== false) {
+            $matches = array();
 
-			if(preg_match('/:(\w+)/', $condition, $matches)) {
+            if (preg_match('/:(\w+)/', $condition, $matches)) {
                 $keys[] = $matches[1];
 
                 $condition = preg_replace('/:\w+/', '([^\/\?\#]+)', $condition, 1);
-			}
-		}
+            }
+        }
 
-		$values = array();
+        $values = array();
 
-		$result = preg_match('/' . $condition . '/', $url, $values);
+        $result = preg_match('/' . $condition . '/', $url, $values);
 
-		if(!$result) {
-			return false;
-		}
+        if (!$result) {
+            return false;
+        }
 
-		if(count($keys)) {
-			array_shift($values);
+        if (count($keys)) {
+            array_shift($values);
 
-			$this->request->set(
-				array_combine($keys, $values)
-			);
-		}
+            $this->request->set(
+                array_combine($keys, $values)
+            );
+        }
 
-		return true;
-	}
+        return true;
+    }
 }
 
 function asadoo() {
-	return new AsadooHandler();
+    return new AsadooHandler();
 }
 // From file: ../src/AsadooDependences.php
 
@@ -155,9 +157,9 @@ class AsadooDependences {
     }
 
     /**
-	 * @param $id
-	 * @return mixed
-	 */
+     * @param $id
+     * @return mixed
+     */
     public function __get($id) {
         if (!isset($this->deps[$id])) {
             return null;
@@ -186,54 +188,54 @@ class AsadooDependences {
 // From file: ../src/AsadooRequest.php
 
 class AsadooRequest {
-	private $variables = array();
+    private $variables = array();
 
-	public function has($match) {
-	    return strpos($this->url(), $match) !== false;
-	}
+    public function has($match) {
+        return strpos($this->url(), $match) !== false;
+    }
 
-	public function get($key, $fallback = null) {
-		if(isset($this->variables[$key])) {
-			return $this->variables[$key];
-		}
+    public function get($key, $fallback = null) {
+        if (isset($this->variables[$key])) {
+            return $this->variables[$key];
+        }
 
-		if(isset($_REQUEST[$key])) {
-			return $_REQUEST[$key];
-		}
+        if (isset($_REQUEST[$key])) {
+            return $_REQUEST[$key];
+        }
 
-		return $fallback;
-	}
+        return $fallback;
+    }
 
-	public function set($key, $value = null) {
-		if(is_array($key)) {
-			foreach($key as $k => $v) {
-				$this->set($k, $v);
-			}
-			return;
-		}
+    public function set($key, $value = null) {
+        if (is_array($key)) {
+            foreach ($key as $k => $v) {
+                $this->set($k, $v);
+            }
+            return;
+        }
 
-		$this->variables[$key] = $value;
+        $this->variables[$key] = $value;
 
-		return $value;
-	}
+        return $value;
+    }
 
-	public function isPost() {
-		return $_SERVER['REQUEST_METHOD'] == 'POST';
-	}
+    public function isPost() {
+        return $_SERVER['REQUEST_METHOD'] == 'POST';
+    }
 
-	public function url() {
-		$url = $this->domain() . $_SERVER['REQUEST_URI'];
+    public function url() {
+        $url = $this->domain() . $_SERVER['REQUEST_URI'];
 
-		if(substr($url, -1, 1) == '/') {
-			$url = substr($url, 0, -1);
-		}
+        if (substr($url, -1, 1) == '/') {
+            $url = substr($url, 0, -1);
+        }
 
-		return $url;
-	}
+        return $url;
+    }
 
-	public function domain() {
-		return $_SERVER['SERVER_NAME'];
-	}
+    public function domain() {
+        return $_SERVER['SERVER_NAME'];
+    }
 
     public function segment($index) {
         $parts = explode('/', $_SERVER['REQUEST_URI']);
@@ -242,7 +244,8 @@ class AsadooRequest {
         return isset($parts[$index]) ? $parts[$index] : null;
     }
 
-	public function ip() {}
+    public function ip() {
+    }
 }
 // From file: ../src/AsadooResponse.php
 
@@ -293,34 +296,37 @@ class AsadooResponse {
         ob_start();
     }
 
-	private function sendResponseCode($code) {
-	    if(isset($this->codes[$code])) {
-            $this->header('HTTP/1.0', $code . ' ' .$this->codes[$code]);
-	        return true;
-	    }
+    private function sendResponseCode($code) {
+        if (isset($this->codes[$code])) {
+            $this->header('HTTP/1.0', $code . ' ' . $this->codes[$code]);
+            return true;
+        }
 
-	    return false;
-	}
+        return false;
+    }
 
     public function setResponseCode($code) {
         $this->code = $code;
         return $this;
     }
 
-	public function setCache() {}
-	public function setNoCache() {}
+    public function setCache() {
+    }
 
-	public function header($key, $value) {
+    public function setNoCache() {
+    }
+
+    public function header($key, $value) {
         header($key . ' ' . $value);
-	}
+    }
 
-	public function send() {
-	    $arguments = func_get_args();
+    public function send() {
+        $arguments = func_get_args();
 
-	    foreach($arguments as $arg) {
+        foreach ($arguments as $arg) {
             echo $arg;
-	    }
-	}
+        }
+    }
 
     public function end() {
         AsadooCore::getInstance()->end();
@@ -332,37 +338,37 @@ class AsadooResponse {
 // From file: ../src/AsadooHandler.php
 
 class AsadooHandler {
-	public $conditions = array();
-	public $fn;
-	public $finisher = false;
+    public $conditions = array();
+    public $fn;
+    public $finisher = false;
 
-	public function on($condition) {
-		$this->conditions[] = $condition;
-		return $this;
-	}
+    public function on($condition) {
+        $this->conditions[] = $condition;
+        return $this;
+    }
 
-	public function handle($fn) {
-		$this->fn = $fn;
-		$this->register($this);
+    public function handle($fn) {
+        $this->fn = $fn;
+        $this->register($this);
 
-		return $this;
-	}
+        return $this;
+    }
 
-	public function close() {
-		$this->finisher = true;
-		return $this;
-	}
+    public function close() {
+        $this->finisher = true;
+        return $this;
+    }
 
-	public function dependences() {
-		return AsadooCore::getInstance()->dependences;
-	}
+    public function dependences() {
+        return AsadooCore::getInstance()->dependences;
+    }
 
-	public function start() {
-		AsadooCore::getInstance()->start();
-		return $this;
-	}
+    public function start() {
+        AsadooCore::getInstance()->start();
+        return $this;
+    }
 
-	private function register($handler) {
-		AsadooCore::getInstance()->add($handler);
-	}
+    private function register($handler) {
+        AsadooCore::getInstance()->add($handler);
+    }
 }

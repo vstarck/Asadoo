@@ -11,9 +11,9 @@ class AsadooDependences {
     }
 
     /**
-	 * @param $id
-	 * @return mixed
-	 */
+     * @param $id
+     * @return mixed
+     */
     public function __get($id) {
         if (!isset($this->deps[$id])) {
             return null;

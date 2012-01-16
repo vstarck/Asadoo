@@ -46,34 +46,37 @@ class AsadooResponse {
         ob_start();
     }
 
-	private function sendResponseCode($code) {
-	    if(isset($this->codes[$code])) {
-            $this->header('HTTP/1.0', $code . ' ' .$this->codes[$code]);
-	        return true;
-	    }
+    private function sendResponseCode($code) {
+        if (isset($this->codes[$code])) {
+            $this->header('HTTP/1.0', $code . ' ' . $this->codes[$code]);
+            return true;
+        }
 
-	    return false;
-	}
+        return false;
+    }
 
     public function setResponseCode($code) {
         $this->code = $code;
         return $this;
     }
 
-	public function setCache() {}
-	public function setNoCache() {}
+    public function setCache() {
+    }
 
-	public function header($key, $value) {
+    public function setNoCache() {
+    }
+
+    public function header($key, $value) {
         header($key . ' ' . $value);
-	}
+    }
 
-	public function send() {
-	    $arguments = func_get_args();
+    public function send() {
+        $arguments = func_get_args();
 
-	    foreach($arguments as $arg) {
+        foreach ($arguments as $arg) {
             echo $arg;
-	    }
-	}
+        }
+    }
 
     public function end() {
         AsadooCore::getInstance()->end();

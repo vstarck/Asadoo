@@ -24,6 +24,8 @@ asadoo()
 
         $response->end();
     });
+
+asadoo()->start();
 ```
 
 Copyright (c) 2011 Valentin Starck
