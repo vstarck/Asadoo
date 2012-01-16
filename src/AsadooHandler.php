@@ -16,20 +16,6 @@ class AsadooHandler {
         return $this;
     }
 
-    public function close() {
-        $this->finisher = true;
-        return $this;
-    }
-
-    public function dependences() {
-        return AsadooCore::getInstance()->dependences;
-    }
-
-    public function start() {
-        AsadooCore::getInstance()->start();
-        return $this;
-    }
-
     private function register($handler) {
         AsadooCore::getInstance()->add($handler);
     }

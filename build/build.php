@@ -26,7 +26,8 @@ $builder->
     add_file('AsadooDependences.php')->
     add_file('AsadooRequest.php')->
     add_file('AsadooResponse.php')->
-    add_file('AsadooHandler.php');
+    add_file('AsadooHandler.php')->
+    add_file('AsadooFacade.php');
 
 
 // Enjoy!

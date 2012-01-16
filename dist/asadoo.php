@@ -141,7 +141,7 @@ class AsadooCore {
 }
 
 function asadoo() {
-    return new AsadooHandler();
+    return new AsadooFacade();
 }
 // From file: ../src/AsadooDependences.php
 
@@ -354,8 +354,28 @@ class AsadooHandler {
         return $this;
     }
 
-    public function close() {
-        $this->finisher = true;
+    private function register($handler) {
+        AsadooCore::getInstance()->add($handler);
+    }
+}
+// From file: ../src/AsadooFacade.php
+
+class AsadooFacade {
+    private $handler;
+
+    private function getHandler() {
+        if (!$this->handler) {
+            $this->handler = new AsadooHandler();
+        }
+
+        return $this->handler;
+    }
+
+    public function __call($name, $arguments) {
+        $handler = $this->getHandler();
+
+        call_user_func_array(array($handler, $name), $arguments);
+
         return $this;
     }
 
@@ -367,8 +387,5 @@ class AsadooHandler {
         AsadooCore::getInstance()->start();
         return $this;
     }
-
-    private function register($handler) {
-        AsadooCore::getInstance()->add($handler);
-    }
 }
+

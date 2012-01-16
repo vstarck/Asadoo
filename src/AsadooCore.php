@@ -134,5 +134,5 @@ class AsadooCore {
 }
 
 function asadoo() {
-    return new AsadooHandler();
+    return new AsadooFacade();
 }
