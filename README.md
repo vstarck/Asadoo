@@ -7,6 +7,8 @@
 
 Asadoo - An experimental lightweight PHP framework/router
 
+Inspired by [Sinatra](http://www.sinatrarb.com/ "Sinatra (Ruby)")/[Express](http://expressjs.com/ "Express (NodeJS)")/[Silex](http://silex.sensiolabs.org/ "Silex (PHP)").
+
 Requires PHP 5.3+
 
 ```php
