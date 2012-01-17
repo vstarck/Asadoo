@@ -12,6 +12,9 @@ class AsadooCore {
     private $interrupted = false;
     private $started = false;
 
+    private $beforeCallback = null;
+    private $afterCallback = null;
+
     private function __construct() {
         $this->createRequest();
         $this->createResponse();
@@ -35,6 +38,8 @@ class AsadooCore {
         }
 
         $this->started = true;
+
+        $this->before();
 
         foreach ($this->handlers as $handler) {
             if ($this->interrupted) {
@@ -66,6 +71,7 @@ class AsadooCore {
 
     public function end() {
         $this->interrupted = true;
+        $this->after();
     }
 
     private function match($conditions) {
@@ -137,6 +143,27 @@ class AsadooCore {
         }
 
         return true;
+    }
+
+    public function after($fn = null) {
+        if ($fn) {
+            $this->afterCallback = $fn;
+        } else if (is_callable($fn = $this->afterCallback)) {
+            $fn($this->request, $this->response, $this->dependences);
+        }
+
+        return $this;
+    }
+
+    public function before($fn = null) {
+        if ($fn) {
+            $this->beforeCallback = $fn;
+        } else if (is_callable($fn = $this->beforeCallback)) {
+
+            $fn($this->request, $this->response, $this->dependences);
+        }
+
+        return $this;
     }
 }
 
@@ -271,6 +298,8 @@ class AsadooRequest {
 
 class AsadooResponse {
     private $code = 200;
+    private $formatters = array();
+    private $output = null;
 
     private $codes = array(
         '200' => 'OK',
@@ -352,7 +381,20 @@ class AsadooResponse {
         AsadooCore::getInstance()->end();
 
         $this->sendResponseCode($this->code);
-        ob_end_flush();
+
+        $this->output = ob_get_clean();
+
+        foreach ($this->formatters as $formatter) {
+            if (is_callable($formatter)) {
+                $this->output = $formatter($this->output);
+            }
+        }
+
+        echo $this->output;
+    }
+
+    public function format($formatter) {
+        $this->formatters[] = $formatter;
     }
 }
 // From file: ../src/AsadooHandler.php
@@ -382,6 +424,11 @@ class AsadooHandler {
 
 class AsadooFacade {
     private $handler;
+    private $core;
+
+    public function __construct() {
+        $this->core = AsadooCore::getInstance();
+    }
 
     private function getHandler() {
         if (!$this->handler) {
@@ -400,7 +447,7 @@ class AsadooFacade {
     }
 
     public function dependences() {
-        return AsadooCore::getInstance()->dependences;
+        return $this->core->dependences;
     }
 
     public function start() {
@@ -413,10 +460,10 @@ class AsadooFacade {
                 ->getHandler()
                 ->on($route)
                 ->handle(function($request, $response, $dependences) use($fn) {
-                    if($request->isPost()) {
-                        $fn($request, $response, $dependences);
-                    }
-                });
+            if ($request->isPost()) {
+                $fn($request, $response, $dependences);
+            }
+        });
     }
 
     public function get($route, $fn) {
@@ -424,10 +471,19 @@ class AsadooFacade {
                 ->getHandler()
                 ->on($route)
                 ->handle(function($request, $response, $dependences) use($fn) {
-                    if($request->isGet()) {
-                        $fn($request, $response, $dependences);
-                    }
-                });
+            if ($request->isGet()) {
+                $fn($request, $response, $dependences);
+            }
+        });
+    }
+
+    public function after($fn) {
+        $this->core->after($fn);
+        return $this;
+    }
+
+    public function before($fn) {
+        $this->core->before($fn);
     }
 }
 

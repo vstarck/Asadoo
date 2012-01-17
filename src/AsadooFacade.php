@@ -1,6 +1,11 @@
 <?php
 class AsadooFacade {
     private $handler;
+    private $core;
+
+    public function __construct() {
+        $this->core = AsadooCore::getInstance();
+    }
 
     private function getHandler() {
         if (!$this->handler) {
@@ -19,7 +24,7 @@ class AsadooFacade {
     }
 
     public function dependences() {
-        return AsadooCore::getInstance()->dependences;
+        return $this->core->dependences;
     }
 
     public function start() {
@@ -32,10 +37,10 @@ class AsadooFacade {
                 ->getHandler()
                 ->on($route)
                 ->handle(function($request, $response, $dependences) use($fn) {
-                    if($request->isPost()) {
-                        $fn($request, $response, $dependences);
-                    }
-                });
+            if ($request->isPost()) {
+                $fn($request, $response, $dependences);
+            }
+        });
     }
 
     public function get($route, $fn) {
@@ -43,9 +48,18 @@ class AsadooFacade {
                 ->getHandler()
                 ->on($route)
                 ->handle(function($request, $response, $dependences) use($fn) {
-                    if($request->isGet()) {
-                        $fn($request, $response, $dependences);
-                    }
-                });
+            if ($request->isGet()) {
+                $fn($request, $response, $dependences);
+            }
+        });
+    }
+
+    public function after($fn) {
+        $this->core->after($fn);
+        return $this;
+    }
+
+    public function before($fn) {
+        $this->core->before($fn);
     }
 }

@@ -5,6 +5,9 @@ class AsadooCore {
     private $interrupted = false;
     private $started = false;
 
+    private $beforeCallback = null;
+    private $afterCallback = null;
+
     private function __construct() {
         $this->createRequest();
         $this->createResponse();
@@ -28,6 +31,8 @@ class AsadooCore {
         }
 
         $this->started = true;
+
+        $this->before();
 
         foreach ($this->handlers as $handler) {
             if ($this->interrupted) {
@@ -59,6 +64,7 @@ class AsadooCore {
 
     public function end() {
         $this->interrupted = true;
+        $this->after();
     }
 
     private function match($conditions) {
@@ -130,6 +136,27 @@ class AsadooCore {
         }
 
         return true;
+    }
+
+    public function after($fn = null) {
+        if ($fn) {
+            $this->afterCallback = $fn;
+        } else if (is_callable($fn = $this->afterCallback)) {
+            $fn($this->request, $this->response, $this->dependences);
+        }
+
+        return $this;
+    }
+
+    public function before($fn = null) {
+        if ($fn) {
+            $this->beforeCallback = $fn;
+        } else if (is_callable($fn = $this->beforeCallback)) {
+
+            $fn($this->request, $this->response, $this->dependences);
+        }
+
+        return $this;
     }
 }
 
