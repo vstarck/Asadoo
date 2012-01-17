@@ -211,7 +211,6 @@ class AsadooDependences {
         };
     }
 }
-
 // From file: ../src/AsadooRequest.php
 
 class AsadooRequest {
@@ -486,4 +485,3 @@ class AsadooFacade {
         $this->core->before($fn);
     }
 }
-
