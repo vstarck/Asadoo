@@ -5,7 +5,7 @@
 |___|___||_____|___._|_____||_____|_____|
 ```
 
-Asadoo - An experimental lightweight PHP framework/router.
+Asadoo - An experimental lightweight (one file, less than 500 loc) PHP framework/router.
 
 Inspired by [Sinatra](http://www.sinatrarb.com/ "Sinatra - Ruby") / [Express](http://expressjs.com/ "Express - NodeJS") / [Silex](http://silex.sensiolabs.org/ "Silex PHP").
 
