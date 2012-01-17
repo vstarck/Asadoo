@@ -29,6 +29,7 @@ class AsadooFacade {
 
     public function post($route, $fn) {
         return $this
+                ->getHandler()
                 ->on($route)
                 ->handle(function($request, $response, $dependences) use($fn) {
                     if($request->isPost()) {
@@ -39,6 +40,7 @@ class AsadooFacade {
 
     public function get($route, $fn) {
         return $this
+                ->getHandler()
                 ->on($route)
                 ->handle(function($request, $response, $dependences) use($fn) {
                     if($request->isGet()) {
