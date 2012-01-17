@@ -1,5 +1,5 @@
 <?php
-class AsadooCore {
+class AsadooCore extends AsadooMixin{
     private static $instance;
     private $handlers = array();
     private $interrupted = false;

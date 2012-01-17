@@ -1,5 +1,5 @@
 <?php
-class AsadooHandler {
+class AsadooHandler extends AsadooMixin{
     public $conditions = array();
     public $fn;
     public $finisher = false;

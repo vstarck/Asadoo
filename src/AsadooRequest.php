@@ -1,5 +1,5 @@
 <?php
-class AsadooRequest {
+class AsadooRequest extends AsadooMixin{
     private $variables = array();
 
     public function has($match) {
@@ -74,8 +74,5 @@ class AsadooRequest {
         array_shift($parts);
 
         return isset($parts[$index]) ? $parts[$index] : null;
-    }
-
-    public function ip() {
     }
 }

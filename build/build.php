@@ -6,7 +6,6 @@ $builder = new Builder();
 
 $builder->
     // Config
-    set_separator(PHP_EOL)->
     set_dest('../dist/asadoo.php')->
     set_path('../src/')->
 
@@ -15,13 +14,15 @@ $builder->
             return $fileContent;
         }
 
-        $fileContent = '// From file: ' . $filename . PHP_EOL . $fileContent;
+        $fileContent = str_replace('<?php', '', $fileContent);
+        $fileContent = preg_replace("/(^[\r\n]*|[\r\n]+)[\s\t]*[\r\n]+/", "\n", $fileContent);
 
-        return str_replace('<?php', '', $fileContent);
+        return $fileContent;
     })->
 
     // Files
     add_file('header.php')->
+    add_file('AsadooMixin.php')->
     add_file('AsadooCore.php')->
     add_file('AsadooDependences.php')->
     add_file('AsadooRequest.php')->

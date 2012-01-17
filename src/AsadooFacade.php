@@ -1,5 +1,5 @@
 <?php
-class AsadooFacade {
+class AsadooFacade extends AsadooMixin{
     private $handler;
     private $core;
 
@@ -18,9 +18,13 @@ class AsadooFacade {
     public function __call($name, $arguments) {
         $handler = $this->getHandler();
 
-        call_user_func_array(array($handler, $name), $arguments);
+        if(method_exists($handler, $name)) {
+            call_user_func_array(array($handler, $name), $arguments);
 
-        return $this;
+            return $this;
+        }
+
+        return AsadooMixin::__call($name, $arguments);
     }
 
     public function dependences() {
@@ -61,5 +65,9 @@ class AsadooFacade {
 
     public function before($fn) {
         $this->core->before($fn);
+    }
+
+    public function version() {
+        return '0.2';
     }
 }
