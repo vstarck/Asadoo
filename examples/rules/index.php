@@ -15,8 +15,8 @@ asadoo()
     })
     ->handle(function($request, $response, $dependences) {
         // Captured arguments
-        $id = $request->get('id', 'Not found!');
-        $referral =  $request->get('referral', 'Not found!');
+        $id = $request->value('id', 'Not found!');
+        $referral =  $request->value('referral', 'Not found!');
 
         // Response body
         $response->send('ID: ' . $id);
