@@ -39,12 +39,12 @@ Capturing by POST / GET
 ```php
 <?php
 asadoo()
-    ->get('form', function($request, $response, $dependences) {
+    ->get('/form', function($request, $response, $dependences) {
         // ...
     });
 
 asadoo()
-    ->post('register', function($request, $response, $dependences) {
+    ->post('/register', function($request, $response, $dependences) {
         // ...
     });
 
