@@ -26,4 +26,24 @@ class AsadooFacade {
         AsadooCore::getInstance()->start();
         return $this;
     }
+
+    public function post($route, $fn) {
+        return $this
+                ->on($route)
+                ->handle(function($request, $response, $dependences) use($fn) {
+                    if($request->isPost()) {
+                        $fn($request, $response, $dependences);
+                    }
+                });
+    }
+
+    public function get($route, $fn) {
+        return $this
+                ->on($route)
+                ->handle(function($request, $response, $dependences) use($fn) {
+                    if($request->isGet()) {
+                        $fn($request, $response, $dependences);
+                    }
+                });
+    }
 }
