@@ -1,6 +1,8 @@
 <?php
 class AsadooResponse {
     private $code = 200;
+    private $formatters = array();
+    private $output = null;
 
     private $codes = array(
         '200' => 'OK',
@@ -82,6 +84,19 @@ class AsadooResponse {
         AsadooCore::getInstance()->end();
 
         $this->sendResponseCode($this->code);
-        ob_end_flush();
+
+        $this->output = ob_get_clean();
+
+        foreach ($this->formatters as $formatter) {
+            if (is_callable($formatter)) {
+                $this->output = $formatter($this->output);
+            }
+        }
+
+        echo $this->output;
+    }
+
+    public function format($formatter) {
+        $this->formatters[] = $formatter;
     }
 }
