@@ -51,6 +51,6 @@ asadoo()
 asadoo()->start();
 ```
 
-Copyright (c) 2011 Valentin Starck
+Copyright (c) 2011 [Valentin Starck](http://aijoona.com/)
 
 May be freely distributed under the MIT license. See the MIT-LICENSE file.
