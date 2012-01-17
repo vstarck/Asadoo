@@ -5,11 +5,15 @@
 |___|___||_____|___._|_____||_____|_____|
 ```
 
-Asadoo - An experimental lightweight PHP framework/router
+Asadoo - An experimental lightweight PHP framework/router.
 
 Inspired by [Sinatra](http://www.sinatrarb.com/ "Sinatra - Ruby") / [Express](http://expressjs.com/ "Express - NodeJS") / [Silex](http://silex.sensiolabs.org/ "Silex PHP").
 
 Requires PHP 5.3+
+
+### Routing
+
+Using multiple rules
 
 ```php
 <?php
@@ -25,6 +29,23 @@ asadoo()
         $response->send($id);
 
         $response->end();
+    });
+
+asadoo()->start();
+```
+
+Capturing by POST / GET
+
+```php
+<?php
+asadoo()
+    ->get('form', function($request, $response, $dependences) {
+        // ...
+    });
+
+asadoo()
+    ->post('register', function($request, $response, $dependences) {
+        // ...
     });
 
 asadoo()->start();
