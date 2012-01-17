@@ -51,6 +51,32 @@ asadoo()
 asadoo()->start();
 ```
 
+### Mixin
+
+You can augment base classes at runtime
+
+```php
+<?php
+// Our extension
+class RequestExtended {
+    public function ip($asadooRequestInstance) {
+        return $_SERVER['REMOTE_ADDR'];
+    }
+}
+
+// Mix!
+AsadooRequest::mix(new RequestExtended());
+
+asadoo()->get('*', function($request, $response, $dependences) {
+    $response->send(
+        // Using the new method
+        $request->ip()
+    );
+});
+
+asadoo()->start();
+```
+
 Copyright (c) 2011 [Valentin Starck](http://aijoona.com/)
 
 May be freely distributed under the MIT license. See the MIT-LICENSE file.
