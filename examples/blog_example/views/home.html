@@ -2,6 +2,7 @@
 <html>
 <head>
     <title>{{title}}</title>
+    <link rel="stylesheet" type="text/css" href="{{base}}/css/style.css" />
 </head>
 <body>
     <div class="main">
@@ -9,7 +10,7 @@
         <ul>
         {{#posts}}
           <li>
-              <a href="{{base}}{{url}}">{{title}}</a> ({{date}})
+              <a href="{{base}}{{url}}">{{title}}</a> por {{author}} ({{date}})
           </li>
         {{/posts}}
         </ul>

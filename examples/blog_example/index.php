@@ -16,6 +16,8 @@ class View {
         $template = file_get_contents($path);
         $mustache = new Mustache();
 
+        $vars['base'] = AsadooCore::getInstance()->getBasePath();
+
         $asadooResponseInstance->send(
             $mustache->render($template, $vars)
         );
@@ -36,8 +38,7 @@ asadoo()
 
             $response->render('views/home.html', array(
                 'title' => 'Blog Home',
-                'posts' => $posts,
-                'base' => AsadooCore::getInstance()->getBasePath()
+                'posts' => $posts
             ));
 
             $response->end();
