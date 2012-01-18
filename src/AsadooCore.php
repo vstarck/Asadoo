@@ -4,6 +4,7 @@ class AsadooCore extends AsadooMixin{
     private $handlers = array();
     private $interrupted = false;
     private $started = false;
+    private $basePath = '';
 
     private $beforeCallback = null;
     private $afterCallback = null;
@@ -106,8 +107,10 @@ class AsadooCore extends AsadooMixin{
 
         $keys = array();
 
+        $condition = $this->basePath . $condition;
         $condition = str_replace('*', '.*', $condition);
         $condition = preg_replace('/\//', '\/', $condition) . '$';
+        $condition = preg_replace('~(.*)' . preg_quote('/', '~') . '~', '$1' . '/?', $condition, 1);
 
         while (strpos($condition, ':') !== false) {
             $matches = array();
@@ -157,6 +160,15 @@ class AsadooCore extends AsadooMixin{
         }
 
         return $this;
+    }
+
+    public function setBasePath($path) {
+        $this->basePath = $path;
+        return $this;
+    }
+
+    public function getBasePath() {
+        return $this->basePath;
     }
 }
 

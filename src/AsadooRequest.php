@@ -55,14 +55,12 @@ class AsadooRequest extends AsadooMixin{
         return $_SERVER['REQUEST_METHOD'] == 'GET';
     }
 
+    public function path() {
+        return str_replace(AsadooCore::getInstance()->getBasePath(), '', $_SERVER['REQUEST_URI']);
+    }
+
     public function url() {
-        $url = $this->domain() . $_SERVER['REQUEST_URI'];
-
-        if (substr($url, -1, 1) == '/') {
-            $url = substr($url, 0, -1);
-        }
-
-        return $url;
+        return $this->domain() . $_SERVER['REQUEST_URI'];
     }
 
     public function domain() {

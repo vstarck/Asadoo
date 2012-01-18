@@ -1,5 +1,5 @@
 <?php
-class AsadooFacade extends AsadooMixin{
+class AsadooFacade extends AsadooMixin {
     private $handler;
     private $core;
 
@@ -18,7 +18,7 @@ class AsadooFacade extends AsadooMixin{
     public function __call($name, $arguments) {
         $handler = $this->getHandler();
 
-        if(method_exists($handler, $name)) {
+        if (method_exists($handler, $name)) {
             call_user_func_array(array($handler, $name), $arguments);
 
             return $this;
@@ -65,6 +65,11 @@ class AsadooFacade extends AsadooMixin{
 
     public function before($fn) {
         $this->core->before($fn);
+    }
+
+    public function setBasePath($path) {
+        $this->core->setBasePath($path);
+        return $this;
     }
 
     public function version() {

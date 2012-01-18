@@ -57,7 +57,7 @@ class AsadooResponse extends AsadooMixin{
         return false;
     }
 
-    public function setResponseCode($code) {
+    public function code($code) {
         $this->code = $code;
         return $this;
     }
