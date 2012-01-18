@@ -24,7 +24,7 @@ asadoo()
         return $request->has('view');
     })
     ->handle(function($request, $response, $dependences) {
-        $id = $request->get('id', 'ID not found!');
+        $id = $request->value('id', 'ID not found!');
 
         $response->send($id);
 

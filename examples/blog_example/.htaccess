@@ -1,0 +1,5 @@
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+    RewriteCond $1 !^([a-z]+.php|css|js|images)
+    RewriteRule (.*) index.php [QSA]
+</IfModule>

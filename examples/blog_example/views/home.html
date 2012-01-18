@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>{{title}}</title>
+</head>
+<body>
+    <div class="main">
+        <h1>{{title}}</h1>
+        <ul>
+        {{#posts}}
+          <li>
+              <a href="{{base}}{{url}}">{{title}}</a> ({{date}})
+          </li>
+        {{/posts}}
+        </ul>
+    </div>
+</body>
+</html>

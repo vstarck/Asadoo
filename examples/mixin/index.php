@@ -10,12 +10,11 @@ class RequestExtended {
 
 AsadooRequest::mix(new RequestExtended());
 
-// GET
 asadoo()->get('*', function($request, $response, $dependences) {
     $response->send(
+        // The new method
         $request->ip()
     );
 });
 
-// Aaaaand, go!
 asadoo()->start();

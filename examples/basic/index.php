@@ -54,7 +54,7 @@ asadoo()
     ->on('/error')
     ->handle(function($request, $response, $dependences) {
         // Server error!
-        $response->setResponseCode(500);
+        $response->code(500);
 
         $response->send('Error!');
 
@@ -81,7 +81,7 @@ asadoo()
     // All requests
     ->on('*')
     ->handle(function($request, $response, $dependences) {
-        $response->setResponseCode(404);
+        $response->code(404);
 
         $response->send('404');
         $response->send(
