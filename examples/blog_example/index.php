@@ -10,6 +10,7 @@ asadoo()->dependences()->register('query', function() {
     return new Query();
 });
 
+// Our mustache adapter
 class View {
     public function render($asadooResponseInstance, $path, $vars = array()) {
         $template = file_get_contents($path);
@@ -21,6 +22,7 @@ class View {
     }
 }
 
+// Mix the adapter into the response class
 AsadooResponse::mix(new View());
 
 // Home
@@ -71,4 +73,5 @@ asadoo()
             $response->send('404 - Not found!');
         });
 
+// Aaaaand, go!
 asadoo()->start();
