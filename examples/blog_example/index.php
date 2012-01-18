@@ -23,6 +23,7 @@ class View {
 
 AsadooResponse::mix(new View());
 
+// Home
 asadoo()
         ->on('/')
         ->on('/home/')
@@ -40,6 +41,7 @@ asadoo()
             $response->end();
         });
 
+// Entries
 asadoo()
         ->on(function($request, $response, $dependences) {
             $result = $dependences->query
@@ -47,8 +49,10 @@ asadoo()
                     ->where('url', $request->path())
                     ->get();
 
+            // Save the result
             $request->set('post', $result);
 
+            // Handle valid entries only
             return count($result);
         })
         ->handle(function($request, $response, $dependences) {
@@ -59,6 +63,7 @@ asadoo()
             $response->end();
         });
 
+// Everything else, 404
 asadoo()
         ->on('*')
         ->handle(function($request, $response, $dependences) {
