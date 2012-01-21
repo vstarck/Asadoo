@@ -1,18 +1,17 @@
 <?php
-class AsadooCore extends AsadooMixin{
+class AsadooCore extends AsadooMixin {
     private static $instance;
     private $handlers = array();
     private $interrupted = false;
     private $started = false;
-    private $basePath = '';
 
     private $beforeCallback = null;
     private $afterCallback = null;
 
     private function __construct() {
-        $this->createRequest();
-        $this->createResponse();
-        $this->createDependences();
+        $this->request = new AsadooRequest($this);
+        $this->response = new AsadooResponse($this);
+        $this->dependences = new AsadooDependences($this);
     }
 
     private function __clone() {
@@ -51,24 +50,16 @@ class AsadooCore extends AsadooMixin{
         }
     }
 
-    private function createRequest() {
-        $this->request = new AsadooRequest();
-    }
-
-    private function createResponse() {
-        $this->response = new AsadooResponse();
-    }
-
-    private function createDependences() {
-        $this->dependences = new AsadooDependences();
-    }
-
     public function end() {
         $this->interrupted = true;
         $this->after();
     }
 
     private function match($conditions) {
+        if (!count($conditions)) {
+            return true;
+        }
+
         foreach ($conditions as $condition) {
             if ($this->matchCondition($condition)) {
                 return true;
@@ -78,14 +69,8 @@ class AsadooCore extends AsadooMixin{
     }
 
     private function matchCondition($condition) {
-        $request = $this->request;
-        $response = $this->response;
-        $dependences = $this->dependences;
-
-        if (is_callable($condition)) {
-            if ($condition($request, $response, $dependences)) {
-                return true;
-            }
+        if (is_callable($condition) && $condition($this->request, $this->response, $this->dependences)) {
+            return true;
         }
 
         if (is_string($condition)) {
@@ -101,16 +86,23 @@ class AsadooCore extends AsadooMixin{
         return false;
     }
 
+    private function formatStringCondition($condition) {
+        $condition = $this->request->getBaseURL() . $condition;
+        $condition = str_replace('*', '.*', $condition);
+        $condition = preg_replace('/\//', '\/', $condition) . '$';
+        $condition = preg_replace('~(.*)' . preg_quote('/', '~') . '~', '$1' . '/?', $condition, 1);
+
+        return $condition;
+    }
+
     // TODO refactor
     private function matchStringCondition($condition) {
         $url = $this->request->url();
 
         $keys = array();
 
-        $condition = $this->basePath . $condition;
-        $condition = str_replace('*', '.*', $condition);
-        $condition = preg_replace('/\//', '\/', $condition) . '$';
-        $condition = preg_replace('~(.*)' . preg_quote('/', '~') . '~', '$1' . '/?', $condition, 1);
+        $condition = $this->formatStringCondition($condition);
+
 
         while (strpos($condition, ':') !== false) {
             $matches = array();
@@ -155,23 +147,23 @@ class AsadooCore extends AsadooMixin{
         if ($fn) {
             $this->beforeCallback = $fn;
         } else if (is_callable($fn = $this->beforeCallback)) {
-
             $fn($this->request, $this->response, $this->dependences);
         }
 
         return $this;
     }
 
-    public function setBasePath($path) {
-        $this->basePath = $path;
-        return $this;
+    public function getBaseURL() {
+        return $this->request->getBaseURL();
     }
 
-    public function getBasePath() {
-        return $this->basePath;
+    public function setSanitizer($fn) {
+        $this->request->setSanitizer($fn);
+
+        return $this;
     }
 }
 
 function asadoo() {
-    return new AsadooFacade();
+    return new AsadooFacade(AsadooCore::getInstance());
 }
