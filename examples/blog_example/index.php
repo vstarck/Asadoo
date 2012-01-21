@@ -4,19 +4,22 @@ include '../../dist/asadoo.php';
 include 'Mustache.php';
 include 'Query.php';
 
-asadoo()->setBasePath('/examples/blog_example');
-
 asadoo()->dependences()->register('query', function() {
     return new Query();
 });
 
 // Our mustache adapter
 class View {
+    /**
+     * @param AsadooResponse $asadooResponseInstance
+     * @param string $path
+     * @param array $vars
+     */
     public function render($asadooResponseInstance, $path, $vars = array()) {
         $template = file_get_contents($path);
         $mustache = new Mustache();
 
-        $vars['base'] = AsadooCore::getInstance()->getBasePath();
+        $vars['base'] = AsadooCore::getInstance()->getBaseURL();
 
         $asadooResponseInstance->send(
             $mustache->render($template, $vars)

@@ -20,18 +20,17 @@ class AsadooMixin {
         throw new ErrorException('Method not found: ' . $name);
     }
 }
-class AsadooCore extends AsadooMixin{
+class AsadooCore extends AsadooMixin {
     private static $instance;
     private $handlers = array();
     private $interrupted = false;
     private $started = false;
-    private $basePath = '';
     private $beforeCallback = null;
     private $afterCallback = null;
     private function __construct() {
-        $this->createRequest();
-        $this->createResponse();
-        $this->createDependences();
+        $this->request = new AsadooRequest($this);
+        $this->response = new AsadooResponse($this);
+        $this->dependences = new AsadooDependences($this);
     }
     private function __clone() {
     }
@@ -60,20 +59,14 @@ class AsadooCore extends AsadooMixin{
             $this->response->end();
         }
     }
-    private function createRequest() {
-        $this->request = new AsadooRequest();
-    }
-    private function createResponse() {
-        $this->response = new AsadooResponse();
-    }
-    private function createDependences() {
-        $this->dependences = new AsadooDependences();
-    }
     public function end() {
         $this->interrupted = true;
         $this->after();
     }
     private function match($conditions) {
+        if (!count($conditions)) {
+            return true;
+        }
         foreach ($conditions as $condition) {
             if ($this->matchCondition($condition)) {
                 return true;
@@ -82,13 +75,8 @@ class AsadooCore extends AsadooMixin{
         return false;
     }
     private function matchCondition($condition) {
-        $request = $this->request;
-        $response = $this->response;
-        $dependences = $this->dependences;
-        if (is_callable($condition)) {
-            if ($condition($request, $response, $dependences)) {
-                return true;
-            }
+        if (is_callable($condition) && $condition($this->request, $this->response, $this->dependences)) {
+            return true;
         }
         if (is_string($condition)) {
             if (trim($condition) == '*') {
@@ -100,14 +88,18 @@ class AsadooCore extends AsadooMixin{
         }
         return false;
     }
+    private function formatStringCondition($condition) {
+        $condition = $this->request->getBaseURL() . $condition;
+        $condition = str_replace('*', '.*', $condition);
+        $condition = preg_replace('/\//', '\/', $condition) . '$';
+        $condition = preg_replace('~(.*)' . preg_quote('/', '~') . '~', '$1' . '/?', $condition, 1);
+        return $condition;
+    }
     // TODO refactor
     private function matchStringCondition($condition) {
         $url = $this->request->url();
         $keys = array();
-        $condition = $this->basePath . $condition;
-        $condition = str_replace('*', '.*', $condition);
-        $condition = preg_replace('/\//', '\/', $condition) . '$';
-        $condition = preg_replace('~(.*)' . preg_quote('/', '~') . '~', '$1' . '/?', $condition, 1);
+        $condition = $this->formatStringCondition($condition);
         while (strpos($condition, ':') !== false) {
             $matches = array();
             if (preg_match('/:(\w+)/', $condition, $matches)) {
@@ -144,16 +136,16 @@ class AsadooCore extends AsadooMixin{
         }
         return $this;
     }
-    public function setBasePath($path) {
-        $this->basePath = $path;
-        return $this;
+    public function getBaseURL() {
+        return $this->request->getBaseURL();
     }
-    public function getBasePath() {
-        return $this->basePath;
+    public function setSanitizer($fn) {
+        $this->request->setSanitizer($fn);
+        return $this;
     }
 }
 function asadoo() {
-    return new AsadooFacade();
+    return new AsadooFacade(AsadooCore::getInstance());
 }
 /**
  * @auhtor Fabien Potencer
@@ -161,6 +153,10 @@ function asadoo() {
  */
 class AsadooDependences extends AsadooMixin{
     protected $deps = array();
+    private $core;
+    public function __construct($core) {
+        $this->core = $core;
+    }
     public function register($id, $value) {
         $this->deps[$id] = $value;
     }
@@ -189,14 +185,22 @@ class AsadooDependences extends AsadooMixin{
         };
     }
 }
-class AsadooRequest extends AsadooMixin{
+class AsadooRequest extends AsadooMixin {
+    const POST = 'POST';
+    const GET = 'GET';
+    const VALUE = 'VALUE';
+    private $core;
     private $variables = array();
+    private $sanitizer;
+    public function __construct($core) {
+        $this->core = $core;
+    }
     public function has($match) {
         return strpos($this->url(), $match) !== false;
     }
     public function value($key, $fallback = null) {
         if (isset($this->variables[$key])) {
-            return $this->variables[$key];
+            return $this->sanitize($this->variables[$key], self::VALUE, $this->core->dependences);
         }
         if (isset($_REQUEST[$key])) {
             return $_REQUEST[$key];
@@ -205,13 +209,13 @@ class AsadooRequest extends AsadooMixin{
     }
     public function post($key, $fallback = null) {
         if (isset($_POST[$key])) {
-            return $_POST[$key];
+            return $this->sanitize($_POST[$key], self::POST, $this->core->dependences);
         }
         return $fallback;
     }
     public function get($key, $fallback = null) {
         if (isset($_GET[$key])) {
-            return $_GET[$key];
+            return $this->sanitize($_GET[$key], self::GET, $this->core->dependences);
         }
         return $fallback;
     }
@@ -226,27 +230,52 @@ class AsadooRequest extends AsadooMixin{
         return $this;
     }
     public function isPost() {
-        return $_SERVER['REQUEST_METHOD'] == 'POST';
+        return $_SERVER['REQUEST_METHOD'] == self::POST;
     }
     public function isGet() {
-        return $_SERVER['REQUEST_METHOD'] == 'GET';
+        return $_SERVER['REQUEST_METHOD'] == self::GET;
     }
     public function path() {
-        return str_replace(AsadooCore::getInstance()->getBasePath(), '', $_SERVER['REQUEST_URI']);
+        return str_replace($this->getBaseURL(), '', $_SERVER['REQUEST_URI']);
     }
     public function url() {
-        return $this->domain() . $_SERVER['REQUEST_URI'];
+        return preg_replace('/\?.+/', '', $this->domain() . $_SERVER['REQUEST_URI']);
     }
     public function domain() {
         return $_SERVER['SERVER_NAME'];
+    }
+    public function userAgent() {
+        return $_SERVER['HTTP_USER_AGENT'];
     }
     public function segment($index) {
         $parts = explode('/', $_SERVER['REQUEST_URI']);
         array_shift($parts);
         return isset($parts[$index]) ? $parts[$index] : null;
     }
+    private function sanitize($value, $type, $dependences) {
+        if (is_callable($fn = $this->sanitizer)) {
+            return $fn($value, $type, $dependences);
+        }
+        return $value;
+    }
+    public function setSanitizer($fn) {
+        $this->sanitizer = $fn;
+        return $this;
+    }
+    /**
+     * @see https://github.com/codeguy/Slim/blob/master/Slim/Http/Uri.php#L69
+     * @static
+     * @return string
+     */
+    public static function getBaseURL() {
+        $requestUri = isset($_SERVER['REQUEST_URI']) ? $_SERVER['REQUEST_URI'] : $_SERVER['PHP_SELF'];
+        $scriptName = $_SERVER['SCRIPT_NAME'];
+        $baseUri = strpos($requestUri, $scriptName) === 0 ? $scriptName : str_replace('\\', '/', dirname($scriptName));
+        return rtrim($baseUri, '/');
+    }
 }
-class AsadooResponse extends AsadooMixin{
+class AsadooResponse extends AsadooMixin {
+    private $core;
     private $code = 200;
     private $formatters = array();
     private $output = null;
@@ -289,7 +318,8 @@ class AsadooResponse extends AsadooMixin{
         '504' => 'Gateway Timeout',
         '505' => 'HTTP Version Not Supported'
     );
-    public function __construct() {
+    public function __construct($core) {
+        $this->core = $core;
         ob_start();
     }
     private function sendResponseCode($code) {
@@ -302,10 +332,6 @@ class AsadooResponse extends AsadooMixin{
     public function code($code) {
         $this->code = $code;
         return $this;
-    }
-    public function setCache() {
-    }
-    public function setNoCache() {
     }
     public function header($key, $value) {
         header($key . ' ' . $value);
@@ -335,28 +361,32 @@ class AsadooHandler extends AsadooMixin{
     public $conditions = array();
     public $fn;
     public $finisher = false;
+    private $core;
+    public function __construct($core) {
+        $this->core = $core;
+    }
     public function on($condition) {
         $this->conditions[] = $condition;
         return $this;
     }
     public function handle($fn) {
         $this->fn = $fn;
-        $this->register($this);
+        $this->register();
         return $this;
     }
-    private function register($handler) {
-        AsadooCore::getInstance()->add($handler);
+    private function register() {
+        $this->core->add($this);
     }
 }
 class AsadooFacade extends AsadooMixin {
     private $handler;
     private $core;
-    public function __construct() {
-        $this->core = AsadooCore::getInstance();
+    public function __construct($core) {
+        $this->core = $core;
     }
     private function getHandler() {
         if (!$this->handler) {
-            $this->handler = new AsadooHandler();
+            $this->handler = new AsadooHandler($this->core);
         }
         return $this->handler;
     }
@@ -372,7 +402,7 @@ class AsadooFacade extends AsadooMixin {
         return $this->core->dependences;
     }
     public function start() {
-        AsadooCore::getInstance()->start();
+        $this->core->start();
         return $this;
     }
     public function post($route, $fn) {
@@ -404,6 +434,10 @@ class AsadooFacade extends AsadooMixin {
     }
     public function setBasePath($path) {
         $this->core->setBasePath($path);
+        return $this;
+    }
+    public function setSanitizer($fn) {
+        $this->core->setSanitizer($fn);
         return $this;
     }
     public function version() {
