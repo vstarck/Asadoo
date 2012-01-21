@@ -3,6 +3,11 @@ class AsadooHandler extends AsadooMixin{
     public $conditions = array();
     public $fn;
     public $finisher = false;
+    private $core;
+
+    public function __construct($core) {
+        $this->core = $core;
+    }
 
     public function on($condition) {
         $this->conditions[] = $condition;
@@ -11,12 +16,12 @@ class AsadooHandler extends AsadooMixin{
 
     public function handle($fn) {
         $this->fn = $fn;
-        $this->register($this);
+        $this->register();
 
         return $this;
     }
 
-    private function register($handler) {
-        AsadooCore::getInstance()->add($handler);
+    private function register() {
+        $this->core->add($this);
     }
 }

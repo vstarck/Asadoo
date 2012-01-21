@@ -5,6 +5,11 @@
  */
 class AsadooDependences extends AsadooMixin{
     protected $deps = array();
+    private $core;
+
+    public function __construct($core) {
+        $this->core = $core;
+    }
 
     public function register($id, $value) {
         $this->deps[$id] = $value;

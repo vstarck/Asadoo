@@ -3,13 +3,13 @@ class AsadooFacade extends AsadooMixin {
     private $handler;
     private $core;
 
-    public function __construct() {
-        $this->core = AsadooCore::getInstance();
+    public function __construct($core) {
+        $this->core = $core;
     }
 
     private function getHandler() {
         if (!$this->handler) {
-            $this->handler = new AsadooHandler();
+            $this->handler = new AsadooHandler($this->core);
         }
 
         return $this->handler;
@@ -32,7 +32,7 @@ class AsadooFacade extends AsadooMixin {
     }
 
     public function start() {
-        AsadooCore::getInstance()->start();
+        $this->core->start();
         return $this;
     }
 
@@ -69,6 +69,11 @@ class AsadooFacade extends AsadooMixin {
 
     public function setBasePath($path) {
         $this->core->setBasePath($path);
+        return $this;
+    }
+
+    public function setSanitizer($fn) {
+        $this->core->setSanitizer($fn);
         return $this;
     }
 

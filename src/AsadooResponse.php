@@ -1,5 +1,6 @@
 <?php
-class AsadooResponse extends AsadooMixin{
+class AsadooResponse extends AsadooMixin {
+    private $core;
     private $code = 200;
     private $formatters = array();
     private $output = null;
@@ -44,7 +45,8 @@ class AsadooResponse extends AsadooMixin{
         '505' => 'HTTP Version Not Supported'
     );
 
-    public function __construct() {
+    public function __construct($core) {
+        $this->core = $core;
         ob_start();
     }
 
@@ -60,12 +62,6 @@ class AsadooResponse extends AsadooMixin{
     public function code($code) {
         $this->code = $code;
         return $this;
-    }
-
-    public function setCache() {
-    }
-
-    public function setNoCache() {
     }
 
     public function header($key, $value) {
