@@ -51,6 +51,30 @@ asadoo()
 asadoo()->start();
 ```
 
+### Optional input sanitize
+
+You can define an annonymus function to sanitize GET/POST and values for all handlers. (ie to help prevent SQL Injection)
+
+````php
+<?php
+asadoo()->setSanitizer(function($value, $type, $dependences) {
+    return preg_replace('/[^a-z\d]/', '', $value);
+});
+
+asadoo()
+    ->on('/inject/get/')
+    ->handle(function($request, $response, $dependences) {
+
+        $response->send(
+            $request->get('value')
+        );
+
+        $response->end();
+    });
+
+asadoo()->start();
+```
+
 ### Mixin
 
 You can augment base classes at runtime
