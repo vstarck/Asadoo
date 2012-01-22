@@ -21,10 +21,6 @@ class AsadooRequest extends AsadooMixin {
             return $this->sanitize($this->variables[$key], self::VALUE, $this->core->dependences);
         }
 
-        if (isset($_REQUEST[$key])) {
-            return $_REQUEST[$key];
-        }
-
         return $fallback;
     }
 
