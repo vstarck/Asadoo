@@ -90,9 +90,11 @@ class AsadooCore extends AsadooMixin {
     }
     private function formatStringCondition($condition) {
         $condition = $this->request->getBaseURL() . $condition;
-        $condition = str_replace('*', '.*', $condition);
+        $condition = str_replace('*', '.*?', $condition);
+        if(substr($condition, -1, 1) == '/') {
+            $condition = substr($condition, 0, -1) . '/?';
+        }
         $condition = preg_replace('/\//', '\/', $condition) . '$';
-        $condition = preg_replace('~(.*)' . preg_quote('/', '~') . '~', '$1' . '/?', $condition, 1);
         return $condition;
     }
     // TODO refactor
