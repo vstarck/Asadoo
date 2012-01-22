@@ -202,9 +202,6 @@ class AsadooRequest extends AsadooMixin {
         if (isset($this->variables[$key])) {
             return $this->sanitize($this->variables[$key], self::VALUE, $this->core->dependences);
         }
-        if (isset($_REQUEST[$key])) {
-            return $_REQUEST[$key];
-        }
         return $fallback;
     }
     public function post($key, $fallback = null) {
@@ -244,7 +241,10 @@ class AsadooRequest extends AsadooMixin {
     public function domain() {
         return $_SERVER['SERVER_NAME'];
     }
-    public function userAgent() {
+    public function agent($matches = null) {
+        if(is_string($matches)) {
+            return preg_match($matches, $this->agent());
+        }
         return $_SERVER['HTTP_USER_AGENT'];
     }
     public function segment($index) {
