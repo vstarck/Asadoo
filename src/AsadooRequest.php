@@ -73,7 +73,10 @@ class AsadooRequest extends AsadooMixin {
         return $_SERVER['SERVER_NAME'];
     }
 
-    public function userAgent() {
+    public function agent($matches = null) {
+        if(is_string($matches)) {
+            return preg_match($matches, $this->agent());
+        }
         return $_SERVER['HTTP_USER_AGENT'];
     }
 
