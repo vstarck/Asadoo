@@ -82,6 +82,9 @@ class AsadooCore extends AsadooMixin {
             if (trim($condition) == '*') {
                 return true;
             }
+            if (trim($condition) == '/') {
+                return str_replace('/', '', $this->request->path()) === '';
+            }
             if ($this->matchStringCondition($condition)) {
                 return true;
             }
@@ -89,9 +92,8 @@ class AsadooCore extends AsadooMixin {
         return false;
     }
     private function formatStringCondition($condition) {
-        $condition = $this->request->getBaseURL() . $condition;
         $condition = str_replace('*', '.*?', $condition);
-        if(substr($condition, -1, 1) == '/') {
+        if (substr($condition, -1, 1) == '/') {
             $condition = substr($condition, 0, -1) . '/?';
         }
         $condition = preg_replace('/\//', '\/', $condition) . '$';
@@ -99,9 +101,9 @@ class AsadooCore extends AsadooMixin {
     }
     // TODO refactor
     private function matchStringCondition($condition) {
-        $url = $this->request->url();
+        $url = $this->request->path();
         $keys = array();
-        $condition = $this->formatStringCondition($condition);
+        $condition = '/^' . $this->formatStringCondition($condition) . '/';
         while (strpos($condition, ':') !== false) {
             $matches = array();
             if (preg_match('/:(\w+)/', $condition, $matches)) {
@@ -110,7 +112,7 @@ class AsadooCore extends AsadooMixin {
             }
         }
         $values = array();
-        $result = preg_match('/' . $condition . '/', $url, $values);
+        $result = preg_match($condition, $url, $values);
         if (!$result) {
             return false;
         }
@@ -235,7 +237,8 @@ class AsadooRequest extends AsadooMixin {
         return $_SERVER['REQUEST_METHOD'] == self::GET;
     }
     public function path() {
-        return str_replace($this->getBaseURL(), '', $_SERVER['REQUEST_URI']);
+        $path = str_replace($this->getBaseURL(), '', $_SERVER['REQUEST_URI']);
+        return preg_replace('/\?.+/', '', $path);
     }
     public function url() {
         return preg_replace('/\?.+/', '', $this->domain() . $_SERVER['REQUEST_URI']);

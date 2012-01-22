@@ -77,7 +77,9 @@ class AsadooCore extends AsadooMixin {
             if (trim($condition) == '*') {
                 return true;
             }
-
+            if (trim($condition) == '/') {
+                return str_replace('/', '', $this->request->path()) === '';
+            }
             if ($this->matchStringCondition($condition)) {
                 return true;
             }
@@ -87,10 +89,9 @@ class AsadooCore extends AsadooMixin {
     }
 
     private function formatStringCondition($condition) {
-        $condition = $this->request->getBaseURL() . $condition;
         $condition = str_replace('*', '.*?', $condition);
 
-        if(substr($condition, -1, 1) == '/') {
+        if (substr($condition, -1, 1) == '/') {
             $condition = substr($condition, 0, -1) . '/?';
         }
 
@@ -101,12 +102,11 @@ class AsadooCore extends AsadooMixin {
 
     // TODO refactor
     private function matchStringCondition($condition) {
-        $url = $this->request->url();
+        $url = $this->request->path();
 
         $keys = array();
 
-        $condition = $this->formatStringCondition($condition);
-
+        $condition = '/^' . $this->formatStringCondition($condition) . '/';
 
         while (strpos($condition, ':') !== false) {
             $matches = array();
@@ -120,7 +120,7 @@ class AsadooCore extends AsadooMixin {
 
         $values = array();
 
-        $result = preg_match('/' . $condition . '/', $url, $values);
+        $result = preg_match($condition, $url, $values);
 
         if (!$result) {
             return false;

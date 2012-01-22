@@ -62,7 +62,9 @@ class AsadooRequest extends AsadooMixin {
     }
 
     public function path() {
-        return str_replace($this->getBaseURL(), '', $_SERVER['REQUEST_URI']);
+        $path = str_replace($this->getBaseURL(), '', $_SERVER['REQUEST_URI']);
+
+        return preg_replace('/\?.+/', '', $path);
     }
 
     public function url() {
