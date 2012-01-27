@@ -21,7 +21,7 @@ class View {
 
         $vars['base'] = AsadooCore::getInstance()->getBaseURL();
 
-        $asadooResponseInstance->send(
+        $asadooResponseInstance->write(
             $mustache->render($template, $vars)
         );
     }
@@ -74,7 +74,7 @@ asadoo()
         ->on('*')
         ->handle(function($request, $response, $dependences) {
             $response->code(404);
-            $response->send('404 - Not found!');
+            $response->write('404 - Not found!');
         });
 
 // Aaaaand, go!

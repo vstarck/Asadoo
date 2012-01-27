@@ -26,9 +26,7 @@ asadoo()
     ->handle(function($request, $response, $dependences) {
         $id = $request->value('id', 'ID not found!');
 
-        $response->send($id);
-
-        $response->end();
+        $response->end($id);
     });
 
 asadoo()->start();
@@ -64,12 +62,9 @@ asadoo()->setSanitizer(function($value, $type, $dependences) {
 asadoo()
     ->on('/inject/get/')
     ->handle(function($request, $response, $dependences) {
-
-        $response->send(
+        $response->end(
             $request->get('value')
         );
-
-        $response->end();
     });
 
 asadoo()->start();
@@ -92,7 +87,7 @@ class RequestExtended {
 AsadooRequest::mix(new RequestExtended());
 
 asadoo()->get('*', function($request, $response, $dependences) {
-    $response->send(
+    $response->write(
         // Using the new method
         $request->ip()
     );

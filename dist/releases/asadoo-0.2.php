@@ -341,13 +341,17 @@ class AsadooResponse extends AsadooMixin {
     public function header($key, $value) {
         header($key . ' ' . $value);
     }
-    public function send() {
+    public function write() {
         $arguments = func_get_args();
         foreach ($arguments as $arg) {
             echo $arg;
         }
     }
     public function end() {
+        $arguments = func_get_args();
+        if(count($arguments)) {
+            call_user_func_array(array($this, 'write'), $arguments);
+        }
         AsadooCore::getInstance()->end();
         $this->sendResponseCode($this->code);
         $this->output = ob_get_clean();

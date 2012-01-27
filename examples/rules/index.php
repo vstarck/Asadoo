@@ -19,9 +19,9 @@ asadoo()
         $referral =  $request->value('referral', 'Not found!');
 
         // Response body
-        $response->send('ID: ' . $id);
-        $response->send('<br />');
-        $response->send('Referral: ' . $referral);
+        $response->write('ID: ' . $id);
+        $response->write('<br />');
+        $response->write('Referral: ' . $referral);
 
         $response->end();
     });
@@ -31,7 +31,7 @@ asadoo()
     // All requests
     ->on('*')
     ->handle(function($request, $response, $dependences) {
-        $response->send(
+        $response->write(
             '<html><head><title>Rules</title></head><body><ul>',
             '<li><a href="view/1/batman">view/1/batman</a></li>',
             '<li><a href="view/1">view/1</a></li>',

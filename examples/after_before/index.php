@@ -13,7 +13,7 @@ asadoo()->after(function($request, $response, $dependences) {
 asadoo()
     ->on('*')
     ->handle(function($request, $response, $dependences) {
-        $response->send(
+        $response->write(
             'hello ' . $request->value('who', 'John Doe')
         );
     });

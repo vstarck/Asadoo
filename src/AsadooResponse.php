@@ -68,7 +68,7 @@ class AsadooResponse extends AsadooMixin {
         header($key . ' ' . $value);
     }
 
-    public function send() {
+    public function write() {
         $arguments = func_get_args();
 
         foreach ($arguments as $arg) {
@@ -77,6 +77,12 @@ class AsadooResponse extends AsadooMixin {
     }
 
     public function end() {
+        $arguments = func_get_args();
+
+        if(count($arguments)) {
+            call_user_func_array(array($this, 'write'), $arguments);
+        }
+
         AsadooCore::getInstance()->end();
 
         $this->sendResponseCode($this->code);

@@ -10,7 +10,7 @@ asadoo()
     ->on('/inject/get/')
     ->handle(function($request, $response, $dependences) {
 
-        $response->send(
+        $response->write(
             $request->get('value')
         );
 
@@ -24,7 +24,7 @@ asadoo()
     ->handle(function($request, $response, $dependences) {
         $base = $request->getBaseURL();
 
-        $response->send(
+        $response->write(
             '<html><head><title>Sanitize</title></head><body><ul>',
             "<li><a href=\"{$base}/inject/get?value='1=1\">inject/get/?s='1</a></li>"
         );

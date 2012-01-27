@@ -4,7 +4,7 @@ include '../../dist/asadoo.php';
 
 // GET
 asadoo()->get('*', function($request, $response, $dependences) {
-    $response->send(
+    $response->write(
         '<form action="" method="POST">',
         '<input type="text" name="field" value="1"/>',
         '<input type="submit" value="Submit"/>',
@@ -14,7 +14,7 @@ asadoo()->get('*', function($request, $response, $dependences) {
 
 // POST
 asadoo()->post('*', function($request, $response, $dependences) {
-    $response->send(
+    $response->write(
         'field: ' . $request->post('field')
     );
 });

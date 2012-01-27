@@ -24,7 +24,7 @@ asadoo()
     ->handle(function($request, $response, $dependences) {
         $view = $dependences->view;
 
-        $response->send(
+        $response->write(
             $view->load('/my/crazy/view.php')
         );
     });
@@ -43,7 +43,7 @@ asadoo()
         $id = $request->get('id', 'ID not found!');
 
         // Response body
-        $response->send($id);
+        $response->write($id);
 
         // No other handler will be invoked
         $response->end();
@@ -56,7 +56,7 @@ asadoo()
         // Server error!
         $response->code(500);
 
-        $response->send('Error!');
+        $response->write('Error!');
 
         // No other handler will be invoked
         $response->end();
@@ -68,7 +68,7 @@ asadoo()
     ->handle(function($request, $response, $dependences) {
         $index = 0;
         while($segment = $request->segment($index++)) {
-            $response->send('Segment ' . $index . ': ' . $segment . '<br/>');
+            $response->write('Segment ' . $index . ': ' . $segment . '<br/>');
         }
 
         // No other handler will be invoked
@@ -83,8 +83,8 @@ asadoo()
     ->handle(function($request, $response, $dependences) {
         $response->code(404);
 
-        $response->send('404');
-        $response->send(
+        $response->write('404');
+        $response->write(
             '<br/>Asadoo ' .
             $dependences->config->version
         );
