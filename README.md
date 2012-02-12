@@ -71,6 +71,7 @@ asadoo()
 asadoo()
     ->on('*')
     ->handle(function($request, $response, $dependences) {
+        // Forward the request to another handler
         $request->forward('handler-' . rand(1, 2));
     });
 
