@@ -50,6 +50,7 @@ asadoo()->start();
 ```
 
 Explicit routing (AsadooRequest#forward)
+
 ```php
 <?php
 asadoo()
