@@ -49,6 +49,30 @@ asadoo()
 asadoo()->start();
 ```
 
+Explicit routing (AsadooRequest#forward)
+```php
+<?php
+asadoo()
+    ->name('handler-1')
+    ->handle(function($request, $response, $dependences) {
+        $response->write('handler-1</br>');
+    });
+
+asadoo()
+    ->name('handler-2')
+    ->handle(function($request, $response, $dependences) {
+        $response->write('handler-2</br>');
+    });
+
+asadoo()
+    ->on('*')
+    ->handle(function($request, $response, $dependences) {
+        $request->forward('handler-' . rand(1, 2));
+    });
+
+asadoo()->start();
+```
+
 ### Optional input sanitize
 
 You can define an annonymus function to sanitize GET/POST and values for all handlers. (ie to help prevent SQL Injection)
