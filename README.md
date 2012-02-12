@@ -11,7 +11,10 @@ Inspired by [Sinatra](http://www.sinatrarb.com/ "Sinatra - Ruby") / [Express](ht
 
 Requires PHP 5.3+
 
-### Routing
+<h3>
+ <a name="routing"></a>
+ <a href="#routing">Routing</a>
+</h3>
 
 Using multiple rules
 
@@ -74,7 +77,10 @@ asadoo()
 asadoo()->start();
 ```
 
-### Optional input sanitize
+<h3>
+ <a name="sanitize"></a>
+ <a href="#sanitize">Optional input sanitize</a>
+</h3>
 
 You can define an annonymus function to sanitize GET/POST and values for all handlers. (ie to help prevent SQL Injection)
 
@@ -95,7 +101,10 @@ asadoo()
 asadoo()->start();
 ```
 
-### Mixin
+<h3>
+ <a name="mixin"></a>
+ <a href="#mixin">Mixin</a>
+</h3>
 
 You can augment base classes at runtime
 
@@ -119,7 +128,10 @@ asadoo()->get('*', function($request, $response, $dependences) {
 asadoo()->start();
 ```
 
-###Methods
+<h3>
+ <a name="mixmethodsin"></a>
+ <a href="#methods">Methods</a>
+</h3>
 
 ```
 AsadooRequest
