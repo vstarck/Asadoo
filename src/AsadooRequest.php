@@ -1,9 +1,14 @@
 <?php
-class AsadooRequest extends AsadooMixin {
+final class AsadooRequest extends AsadooMixin {
     const POST = 'POST';
     const GET = 'GET';
     const VALUE = 'VALUE';
+    const HTTP = 'HTTP';
+    const HTTPS = 'HTTPS';
 
+    /**
+     * @var AsadooCore
+     */
     private $core;
     private $variables = array();
     private $sanitizer;
@@ -53,14 +58,6 @@ class AsadooRequest extends AsadooMixin {
         return $this;
     }
 
-    public function isPost() {
-        return $_SERVER['REQUEST_METHOD'] == self::POST;
-    }
-
-    public function isGet() {
-        return $_SERVER['REQUEST_METHOD'] == self::GET;
-    }
-
     public function path() {
         $path = str_replace($this->getBaseURL(), '', $_SERVER['REQUEST_URI']);
 
@@ -76,7 +73,7 @@ class AsadooRequest extends AsadooMixin {
     }
 
     public function agent($matches = null) {
-        if(is_string($matches)) {
+        if (is_string($matches)) {
             return preg_match($matches, $this->agent());
         }
         return $_SERVER['HTTP_USER_AGENT'];
@@ -114,5 +111,45 @@ class AsadooRequest extends AsadooMixin {
         $baseUri = strpos($requestUri, $scriptName) === 0 ? $scriptName : str_replace('\\', '/', dirname($scriptName));
 
         return rtrim($baseUri, '/');
+    }
+
+    public function ip() {
+        if (!empty($_SERVER['HTTP_CLIENT_IP'])) {
+            return $_SERVER['HTTP_CLIENT_IP'];
+        }
+
+        if (!empty($_SERVER['HTTP_X_FORWARDED_FOR'])) {
+            return $_SERVER['HTTP_X_FORWARDED_FOR'];
+        }
+
+        return $_SERVER['REMOTE_ADDR'];
+    }
+
+    public function port() {
+        return $_SERVER['SERVER_PORT'];
+    }
+
+    public function method() {
+        return $_SERVER['REQUEST_METHOD'];
+    }
+
+    public function isPost() {
+        return $this->method() == self::POST;
+    }
+
+    public function isGet() {
+        return $this->method() == self::GET;
+    }
+
+    public function scheme() {
+        return empty($_SERVER['HTTPS']) ? self::HTTP : self::HTTPS;
+    }
+
+    public function isHttps() {
+        return $this->scheme() == self::HTTPS;
+    }
+
+    public function forward($name) {
+        $this->core->handle($name);
     }
 }

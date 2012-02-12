@@ -1,5 +1,5 @@
 <?php
-class AsadooFacade extends AsadooMixin {
+final class AsadooFacade extends AsadooMixin {
     private $handler;
     private $core;
 
@@ -7,6 +7,9 @@ class AsadooFacade extends AsadooMixin {
         $this->core = $core;
     }
 
+    /**
+     * @return AsadooHandler
+     */
     private function getHandler() {
         if (!$this->handler) {
             $this->handler = new AsadooHandler($this->core);
@@ -74,6 +77,12 @@ class AsadooFacade extends AsadooMixin {
 
     public function setSanitizer($fn) {
         $this->core->setSanitizer($fn);
+        return $this;
+    }
+
+    public function name($name) {
+        $this->getHandler()->name($name);
+
         return $this;
     }
 

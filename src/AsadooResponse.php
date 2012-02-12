@@ -1,5 +1,5 @@
 <?php
-class AsadooResponse extends AsadooMixin {
+final class AsadooResponse extends AsadooMixin {
     private $core;
     private $code = 200;
     private $formatters = array();

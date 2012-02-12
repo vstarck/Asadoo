@@ -1,5 +1,5 @@
 <?php
-class AsadooCore extends AsadooMixin {
+final class AsadooCore extends AsadooMixin {
     private static $instance;
     private $handlers = array();
     private $interrupted = false;
@@ -163,6 +163,17 @@ class AsadooCore extends AsadooMixin {
 
     public function setSanitizer($fn) {
         $this->request->setSanitizer($fn);
+
+        return $this;
+    }
+
+    public function handle($name) {
+        foreach ($this->handlers as $handler) {
+            if($handler->name() == $name) {
+                $fn = $handler->fn;
+                $fn($this->request, $this->response, $this->dependences);
+            }
+        }
 
         return $this;
     }

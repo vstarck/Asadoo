@@ -20,7 +20,7 @@ class AsadooMixin {
         throw new ErrorException('Method not found: ' . $name);
     }
 }
-class AsadooCore extends AsadooMixin {
+final class AsadooCore extends AsadooMixin {
     private static $instance;
     private $handlers = array();
     private $interrupted = false;
@@ -147,6 +147,15 @@ class AsadooCore extends AsadooMixin {
         $this->request->setSanitizer($fn);
         return $this;
     }
+    public function handle($name) {
+        foreach ($this->handlers as $handler) {
+            if($handler->name() == $name) {
+                $fn = $handler->fn;
+                $fn($this->request, $this->response, $this->dependences);
+            }
+        }
+        return $this;
+    }
 }
 function asadoo() {
     return new AsadooFacade(AsadooCore::getInstance());
@@ -155,7 +164,7 @@ function asadoo() {
  * @auhtor Fabien Potencer
  * @see http://www.slideshare.net/fabpot/dependency-injection-with-php-53
  */
-class AsadooDependences extends AsadooMixin{
+final class AsadooDependences extends AsadooMixin{
     protected $deps = array();
     private $core;
     public function __construct($core) {
@@ -189,10 +198,15 @@ class AsadooDependences extends AsadooMixin{
         };
     }
 }
-class AsadooRequest extends AsadooMixin {
+final class AsadooRequest extends AsadooMixin {
     const POST = 'POST';
     const GET = 'GET';
     const VALUE = 'VALUE';
+    const HTTP = 'HTTP';
+    const HTTPS = 'HTTPS';
+    /**
+     * @var AsadooCore
+     */
     private $core;
     private $variables = array();
     private $sanitizer;
@@ -230,12 +244,6 @@ class AsadooRequest extends AsadooMixin {
         $this->variables[$key] = $value;
         return $this;
     }
-    public function isPost() {
-        return $_SERVER['REQUEST_METHOD'] == self::POST;
-    }
-    public function isGet() {
-        return $_SERVER['REQUEST_METHOD'] == self::GET;
-    }
     public function path() {
         $path = str_replace($this->getBaseURL(), '', $_SERVER['REQUEST_URI']);
         return preg_replace('/\?.+/', '', $path);
@@ -247,7 +255,7 @@ class AsadooRequest extends AsadooMixin {
         return $_SERVER['SERVER_NAME'];
     }
     public function agent($matches = null) {
-        if(is_string($matches)) {
+        if (is_string($matches)) {
             return preg_match($matches, $this->agent());
         }
         return $_SERVER['HTTP_USER_AGENT'];
@@ -278,8 +286,54 @@ class AsadooRequest extends AsadooMixin {
         $baseUri = strpos($requestUri, $scriptName) === 0 ? $scriptName : str_replace('\\', '/', dirname($scriptName));
         return rtrim($baseUri, '/');
     }
+    public function body() {
+    }
+    public function contentLength() {
+    }
+    public function contentType() {
+    }
+    public function headers() {
+    }
+    public function header() {
+    }
+    public function attributes() {
+    }
+    public function attribute() {
+    }
+    public function host() {
+    }
+    public function ip() {
+        if (!empty($_SERVER['HTTP_CLIENT_IP'])) {
+            return $_SERVER['HTTP_CLIENT_IP'];
+        }
+        if (!empty($_SERVER['HTTP_X_FORWARDED_FOR'])) {
+            return $_SERVER['HTTP_X_FORWARDED_FOR'];
+        }
+        return $_SERVER['REMOTE_ADDR'];
+    }
+    public function port() {
+        return $_SERVER['SERVER_PORT'];
+    }
+    public function method() {
+        return $_SERVER['REQUEST_METHOD'];
+    }
+    public function isPost() {
+        return $this->method() == self::POST;
+    }
+    public function isGet() {
+        return $this->method() == self::GET;
+    }
+    public function scheme() {
+        return empty($_SERVER['HTTPS']) ? self::HTTP : self::HTTPS;
+    }
+    public function isHttps() {
+        return $this->scheme() == self::HTTPS;
+    }
+    public function forward($name) {
+        $this->core->handle($name);
+    }
 }
-class AsadooResponse extends AsadooMixin {
+final class AsadooResponse extends AsadooMixin {
     private $core;
     private $code = 200;
     private $formatters = array();
@@ -366,11 +420,12 @@ class AsadooResponse extends AsadooMixin {
         $this->formatters[] = $formatter;
     }
 }
-class AsadooHandler extends AsadooMixin{
+final class AsadooHandler extends AsadooMixin{
     public $conditions = array();
     public $fn;
     public $finisher = false;
     private $core;
+    private $handlerName;
     public function __construct($core) {
         $this->core = $core;
     }
@@ -386,13 +441,23 @@ class AsadooHandler extends AsadooMixin{
     private function register() {
         $this->core->add($this);
     }
+    public function name($name = null) {
+        if(!is_null($name)) {
+            $this->handlerName = $name;
+            return $this;
+        }
+        return $name;
+    }
 }
-class AsadooFacade extends AsadooMixin {
+final class AsadooFacade extends AsadooMixin {
     private $handler;
     private $core;
     public function __construct($core) {
         $this->core = $core;
     }
+    /**
+     * @return AsadooHandler
+     */
     private function getHandler() {
         if (!$this->handler) {
             $this->handler = new AsadooHandler($this->core);
@@ -447,6 +512,10 @@ class AsadooFacade extends AsadooMixin {
     }
     public function setSanitizer($fn) {
         $this->core->setSanitizer($fn);
+        return $this;
+    }
+    public function name($name) {
+        $this->getHandler()->name($name);
         return $this;
     }
     public function version() {

@@ -3,7 +3,7 @@
  * @auhtor Fabien Potencer
  * @see http://www.slideshare.net/fabpot/dependency-injection-with-php-53
  */
-class AsadooDependences extends AsadooMixin{
+final class AsadooDependences extends AsadooMixin{
     protected $deps = array();
     private $core;
 
