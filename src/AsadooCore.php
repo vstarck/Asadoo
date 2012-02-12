@@ -56,10 +56,6 @@ final class AsadooCore extends AsadooMixin {
     }
 
     private function match($conditions) {
-        if (!count($conditions)) {
-            return true;
-        }
-
         foreach ($conditions as $condition) {
             if ($this->matchCondition($condition)) {
                 return true;
@@ -172,6 +168,7 @@ final class AsadooCore extends AsadooMixin {
             if($handler->name() == $name) {
                 $fn = $handler->fn;
                 $fn($this->request, $this->response, $this->dependences);
+                return $this;
             }
         }
 
