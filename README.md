@@ -109,7 +109,7 @@ class ResponseExtended {
 }
 
 // Mix it!
-AsadooRequest::mix(new ResponseExtended());
+AsadooResponse::mix(new ResponseExtended());
 
 asadoo()->get('*', function($request, $response, $dependences) {
     // Using the new method
