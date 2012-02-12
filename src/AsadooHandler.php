@@ -32,6 +32,6 @@ final class AsadooHandler extends AsadooMixin{
             return $this;
         }
 
-        return $name;
+        return $this->handlerName;
     }
 }
