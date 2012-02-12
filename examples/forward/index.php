@@ -2,15 +2,28 @@
 
 include '../../dist/asadoo.php';
 
-// GET
-asadoo()->get('*', function($request, $response, $dependences) {
-    $request->forward('catch-me!');
-});
+asadoo()
+    ->name('handler-1')
+    ->handle(function($request, $response, $dependences) {
+        $response->write('handler-1</br>');
+    });
 
-// POST
-asadoo()->name('catch-me!')->handle(function($request, $response, $dependences) {
-    $response->write('Hello World!');
-});
+asadoo()
+    ->name('handler-2')
+    ->handle(function($request, $response, $dependences) {
+        $response->write('handler-2</br>');
+    });
 
-// Aaaaand, go!
+asadoo()
+    ->name('handler-3')
+    ->handle(function($request, $response, $dependences) {
+        $response->write('handler-3</br>');
+    });
+
+asadoo()
+    ->on('*')
+    ->handle(function($request, $response, $dependences) {
+        $request->forward('handler-' . rand(1, 3));
+    });
+
 asadoo()->start();
