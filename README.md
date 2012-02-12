@@ -21,7 +21,7 @@ asadoo()
     ->on('/view/:id')
     ->on('/view')
     ->on(function($request, $response, $dependences) {
-        return $request->has('view');
+        return $request->isGet() && $request->has('view');
     })
     ->handle(function($request, $response, $dependences) {
         $id = $request->value('id', 'ID not found!');
@@ -77,23 +77,55 @@ You can augment base classes at runtime
 ```php
 <?php
 // Our extension
-class RequestExtended {
-    public function ip($asadooRequestInstance) {
-        return $_SERVER['REMOTE_ADDR'];
+class ResponseExtended {
+    public function helloWorld($asadooResponseInstance) {
+        $asadooResponseInstance->end('Hello World!');
     }
 }
 
-// Mix!
-AsadooRequest::mix(new RequestExtended());
+// Mix it!
+AsadooRequest::mix(new ResponseExtended());
 
 asadoo()->get('*', function($request, $response, $dependences) {
-    $response->write(
-        // Using the new method
-        $request->ip()
-    );
+    // Using the new method
+    $response->helloWorld();
 });
 
 asadoo()->start();
+```
+
+###Methods
+
+```
+AsadooRequest
+    agent([ string $matches ])
+    domain()
+    forward(string $handlerName)
+    get(string $key)
+    getBaseURL()
+    has(string $match)
+    ip()
+    isGet()
+    isHttps()
+    isPost()
+    method(string $method)
+    path()
+    port()
+    post(string $key)
+    scheme()
+    segment(int $index)
+    set(string $key, mixed $value)
+    setSanitizer($fn)
+    url()
+    value()
+```
+
+```
+AsadooResponse
+    code(int $code)
+    header($key, $value)
+    write(string $content [, string $content [, ... ] ] )
+    end(string $content)
 ```
 
 Copyright (c) 2011 [Valentin Starck](http://aijoona.com/)
