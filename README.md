@@ -95,7 +95,7 @@ asadoo()
     ->on('/inject/get/')
     ->handle(function($request, $response, $dependences) {
         $response->end(
-            $request->get('value')
+            $request->get('value') // gets the sanitized value
         );
     });
 
