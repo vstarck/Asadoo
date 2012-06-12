@@ -1,5 +1,7 @@
 <?php
-final class AsadooCore extends AsadooMixin {
+namespace asadoo;
+
+final class Core extends Mixin {
     private static $instance;
     private $handlers = array();
     private $interrupted = false;
@@ -9,9 +11,9 @@ final class AsadooCore extends AsadooMixin {
     private $afterCallback = null;
 
     private function __construct() {
-        $this->request = new AsadooRequest($this);
-        $this->response = new AsadooResponse($this);
-        $this->dependences = new AsadooDependences($this);
+        $this->request = new Request($this);
+        $this->response = new Response($this);
+        $this->dependences = new Dependences($this);
     }
 
     private function __clone() {
@@ -157,10 +159,8 @@ final class AsadooCore extends AsadooMixin {
         return $this->request->getBaseURL();
     }
 
-    public function setSanitizer($fn) {
-        $this->request->setSanitizer($fn);
-
-        return $this;
+    public function sanitizer($fn = null) {
+        return $this->request->sanitizer($fn);
     }
 
     public function handle($name) {
@@ -177,5 +177,7 @@ final class AsadooCore extends AsadooMixin {
 }
 
 function asadoo() {
-    return new AsadooFacade(AsadooCore::getInstance());
+    return new \asadoo\Facade(
+        \asadoo\Core::getInstance()
+    );
 }

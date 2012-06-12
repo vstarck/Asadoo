@@ -1,13 +1,18 @@
 <?php
-final class AsadooRequest extends AsadooMixin {
+namespace asadoo;
+
+final class Request extends Mixin {
     const POST = 'POST';
     const GET = 'GET';
+    const PUT = 'PUT';
+    const DELETE = 'DELETE';
+
     const VALUE = 'VALUE';
     const HTTP = 'HTTP';
     const HTTPS = 'HTTPS';
 
     /**
-     * @var AsadooCore
+     * @var Core
      */
     private $core;
     private $variables = array();
@@ -23,7 +28,8 @@ final class AsadooRequest extends AsadooMixin {
 
     public function value($key, $fallback = null) {
         if (isset($this->variables[$key])) {
-            return $this->sanitize($this->variables[$key], self::VALUE, $this->core->dependences);
+            return $this->sanitize(
+                $this->variables[$key], self::VALUE, $this->core->dependences);
         }
 
         return $fallback;
@@ -76,11 +82,12 @@ final class AsadooRequest extends AsadooMixin {
         if (is_string($matches)) {
             return preg_match($matches, $this->agent());
         }
+
         return $_SERVER['HTTP_USER_AGENT'];
     }
 
     public function segment($index) {
-        $parts = explode('/', $_SERVER['REQUEST_URI']);
+        $parts = explode('/', $this->path());
         array_shift($parts);
 
         return isset($parts[$index]) ? $parts[$index] : null;
@@ -94,7 +101,11 @@ final class AsadooRequest extends AsadooMixin {
         return $value;
     }
 
-    public function setSanitizer($fn) {
+    public function sanitizer($fn = null) {
+        if(is_null($fn)) {
+            return $this->sanitizer;
+        }
+
         $this->sanitizer = $fn;
 
         return $this;
@@ -105,7 +116,7 @@ final class AsadooRequest extends AsadooMixin {
      * @static
      * @return string
      */
-    public static function getBaseURL() {
+    public static function baseURL() {
         $requestUri = isset($_SERVER['REQUEST_URI']) ? $_SERVER['REQUEST_URI'] : $_SERVER['PHP_SELF'];
         $scriptName = $_SERVER['SCRIPT_NAME'];
         $baseUri = strpos($requestUri, $scriptName) === 0 ? $scriptName : str_replace('\\', '/', dirname($scriptName));
@@ -133,19 +144,27 @@ final class AsadooRequest extends AsadooMixin {
         return $_SERVER['REQUEST_METHOD'];
     }
 
-    public function isPost() {
+    public function isPOST() {
         return $this->method() == self::POST;
     }
 
-    public function isGet() {
+    public function isGET() {
         return $this->method() == self::GET;
     }
 
-    public function scheme() {
-        return empty($_SERVER['HTTPS']) ? self::HTTP : self::HTTPS;
+    public function isPUT() {
+        return $this->method() == self::PUT;
     }
 
-    public function isHttps() {
+    public function isDELETE() {
+        return $this->method() == self::DELETE;
+    }
+
+    public function scheme() {
+        return empty($_SERVER['HTTPS']) || $_SERVER['HTTPS'] !== 'off' ? self::HTTP : self::HTTPS;
+    }
+
+    public function isHTTPS() {
         return $this->scheme() == self::HTTPS;
     }
 

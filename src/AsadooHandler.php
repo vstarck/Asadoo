@@ -1,5 +1,7 @@
 <?php
-final class AsadooHandler extends AsadooMixin{
+namespace asadoo;
+
+final class Handler extends Mixin{
     public $conditions = array();
     public $fn;
     public $finisher = false;

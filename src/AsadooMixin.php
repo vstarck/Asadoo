@@ -1,5 +1,7 @@
 <?php
-class AsadooMixin {
+namespace asadoo;
+
+class Mixin {
     private static $mixes = array();
 
     public static function mix($obj) {

@@ -1,5 +1,7 @@
 <?php
-final class AsadooFacade extends AsadooMixin {
+namespace asadoo;
+
+final class Facade extends Mixin {
     private $handler;
     private $core;
 
@@ -8,11 +10,11 @@ final class AsadooFacade extends AsadooMixin {
     }
 
     /**
-     * @return AsadooHandler
+     * @return Handler
      */
     private function getHandler() {
         if (!$this->handler) {
-            $this->handler = new AsadooHandler($this->core);
+            $this->handler = new Handler($this->core);
         }
 
         return $this->handler;
@@ -27,7 +29,7 @@ final class AsadooFacade extends AsadooMixin {
             return $this;
         }
 
-        return AsadooMixin::__call($name, $arguments);
+        return \asadoo\Mixin::__call($name, $arguments);
     }
 
     public function dependences() {
@@ -36,6 +38,7 @@ final class AsadooFacade extends AsadooMixin {
 
     public function start() {
         $this->core->start();
+
         return $this;
     }
 
@@ -44,7 +47,7 @@ final class AsadooFacade extends AsadooMixin {
                 ->getHandler()
                 ->on($route)
                 ->handle(function($request, $response, $dependences) use($fn) {
-            if ($request->isPost()) {
+            if ($request->isPOST()) {
                 $fn($request, $response, $dependences);
             }
         });
@@ -55,7 +58,29 @@ final class AsadooFacade extends AsadooMixin {
                 ->getHandler()
                 ->on($route)
                 ->handle(function($request, $response, $dependences) use($fn) {
-            if ($request->isGet()) {
+            if ($request->isGET()) {
+                $fn($request, $response, $dependences);
+            }
+        });
+    }
+
+    public function put($route, $fn) {
+        return $this
+                ->getHandler()
+                ->on($route)
+                ->handle(function($request, $response, $dependences) use($fn) {
+            if ($request->isPUT()) {
+                $fn($request, $response, $dependences);
+            }
+        });
+    }
+
+    public function delete($route, $fn) {
+        return $this
+                ->getHandler()
+                ->on($route)
+                ->handle(function($request, $response, $dependences) use($fn) {
+            if ($request->isDELETE()) {
                 $fn($request, $response, $dependences);
             }
         });
@@ -63,20 +88,23 @@ final class AsadooFacade extends AsadooMixin {
 
     public function after($fn) {
         $this->core->after($fn);
+
         return $this;
     }
 
     public function before($fn) {
         $this->core->before($fn);
-    }
 
-    public function setBasePath($path) {
-        $this->core->setBasePath($path);
         return $this;
     }
 
-    public function setSanitizer($fn) {
+    public function sanitizer($fn = null) {
+        if(is_null($fn)) {
+            return $this->core->getSanitizer();
+        }
+
         $this->core->setSanitizer($fn);
+
         return $this;
     }
 
