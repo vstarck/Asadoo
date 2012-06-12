@@ -5,7 +5,7 @@
 |___|___||_____|___._|_____||_____|_____|
 ```
 
-Asadoo - An experimental lightweight (one file, less than 500 loc) PHP framework/router.
+Asadoo - An experimental lightweight (one file, ~500 lines of code) PHP framework/router.
 
 Inspired by [Sinatra](http://www.sinatrarb.com/ "Sinatra - Ruby") / [Express](http://expressjs.com/ "Express - NodeJS") / [Silex](http://silex.sensiolabs.org/ "Silex PHP").
 
@@ -24,7 +24,7 @@ asadoo()
     ->on('/view/:id')
     ->on('/view')
     ->on(function($request, $response, $dependences) {
-        return $request->isGet() && $request->has('view');
+        return $request->isGET() && $request->has('view');
     })
     ->handle(function($request, $response, $dependences) {
         $id = $request->value('id', 'ID not found!');
@@ -35,27 +35,38 @@ asadoo()
 asadoo()->start();
 ```
 
-Capturing by POST / GET
+Capturing by POST / GET / PUT / DELETE
 
 ```php
 <?php
 asadoo()
-    ->get('/form', function($request, $response, $dependences) {
+    ->get('/user', function($request, $response, $dependences) {
         // ...
     });
 
 asadoo()
-    ->post('/register', function($request, $response, $dependences) {
+    ->post('/user', function($request, $response, $dependences) {
+        // ...
+    });
+
+asadoo()
+    ->put('/user', function($request, $response, $dependences) {
+        // ...
+    });
+
+asadoo()
+    ->delete('/user', function($request, $response, $dependences) {
         // ...
     });
 
 asadoo()->start();
 ```
 
-Explicit routing (AsadooRequest#forward)
+Explicit routing (asadoo\Request#forward)
 
 ```php
 <?php
+// Named handlers
 asadoo()
     ->name('handler-1')
     ->handle(function($request, $response, $dependences) {
@@ -68,6 +79,7 @@ asadoo()
         $response->write('handler-2</br>');
     });
 
+// Our catch-all handler
 asadoo()
     ->on('*')
     ->handle(function($request, $response, $dependences) {
@@ -112,14 +124,16 @@ You can augment base classes at runtime
 ```php
 <?php
 // Our extension
-class ResponseExtended {
-    public function helloWorld($asadooResponseInstance) {
-        $asadooResponseInstance->end('Hello World!');
+class ResponseExtension {
+    // Extensions methods always have as its first argument a
+    // reference to the actual object
+    public function helloWorld($responseInstance) {
+        $responseInstance->end('Hello World!');
     }
 }
 
 // Mix it!
-AsadooResponse::mix(new ResponseExtended());
+asadoo\Response::mix(new ResponseExtension());
 
 asadoo()->get('*', function($request, $response, $dependences) {
     // Using the new method
@@ -135,17 +149,34 @@ asadoo()->start();
 </h3>
 
 ```
-AsadooRequest
+asadoo\Facade
+    after(Callable $fn)
+    before(Callable $fn)
+    delete(Callable $handler)
+    get(Callable $handler)
+    name(string $name)
+    post(Callable $handler)
+    put(Callable $handler)
+    sanitizer(Callable $fn)
+    start()
+    version()
+
+```
+
+```
+asadoo\Request
     agent([ string $matches ])
     domain()
     forward(string $handlerName)
     get(string $key)
-    getBaseURL()
+    baseURL()
     has(string $match)
     ip()
-    isGet()
-    isHttps()
-    isPost()
+    isHTTPS()
+    isDELETE()
+    isGET()
+    isPOST()
+    isPUT()
     method(string $method)
     path()
     port()
@@ -159,7 +190,7 @@ AsadooRequest
 ```
 
 ```
-AsadooResponse
+asadoo\Response
     code(int $code)
     header($key, $value)
     write(string $content [, string $content [, ... ] ] )

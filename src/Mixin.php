@@ -19,6 +19,6 @@ class Mixin {
             }
         }
 
-        throw new ErrorException('Method not found: ' . $name);
+        throw new \ErrorException('Method not found: ' . $name);
     }
 }

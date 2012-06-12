@@ -44,7 +44,7 @@ final class Response extends Mixin {
 
     public function header($key, $value) {
         if(headers_sent($file, $line)) {
-            throw ErrorException("Headers already sent in $file:$line");
+            throw \ErrorException("Headers already sent in $file:$line");
         }
 
         header($key . ' ' . $value);

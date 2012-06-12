@@ -2,6 +2,9 @@
 namespace asadoo;
 
 final class Core extends Mixin {
+    /**
+     * @var Core
+     */
     private static $instance;
     private $handlers = array();
     private $interrupted = false;
@@ -13,7 +16,8 @@ final class Core extends Mixin {
     private function __construct() {
         $this->request = new Request($this);
         $this->response = new Response($this);
-        $this->dependences = new Dependences($this);
+        $this->responseMatcher = new Dispatcher($this);
+        $this->dependences = new \Pimple();
     }
 
     private function __clone() {
@@ -41,7 +45,7 @@ final class Core extends Mixin {
                 break;
             }
 
-            if ($this->match($handler->conditions)) {
+            if ($this->request->match($handler->conditions)) {
                 $fn = $handler->fn;
                 $fn($this->request, $this->response, $this->dependences);
             }
@@ -55,84 +59,6 @@ final class Core extends Mixin {
     public function end() {
         $this->interrupted = true;
         $this->after();
-    }
-
-    private function match($conditions) {
-        foreach ($conditions as $condition) {
-            if ($this->matchCondition($condition)) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    private function matchCondition($condition) {
-        if (is_callable($condition) && $condition($this->request, $this->response, $this->dependences)) {
-            return true;
-        }
-
-        if (!is_string($condition)) {
-            if (trim($condition) == '*') {
-                return true;
-            }
-            if (trim($condition) == '/') {
-                return str_replace('/', '', $this->request->path()) === '';
-            }
-            if ($this->matchStringCondition($condition)) {
-                return true;
-            }
-        }
-
-        return false;
-    }
-
-    private function formatStringCondition($condition) {
-        $condition = str_replace('*', '.*?', $condition);
-
-        if (substr($condition, -1, 1) == '/') {
-            $condition = substr($condition, 0, -1) . '/?';
-        }
-
-        $condition = preg_replace('/\//', '\/', $condition) . '$';
-
-        return $condition;
-    }
-
-    // TODO refactor
-    private function matchStringCondition($condition) {
-        $url = $this->request->path();
-
-        $keys = array();
-
-        $condition = '/^' . $this->formatStringCondition($condition) . '/';
-
-        while (strpos($condition, ':') !== false) {
-            $matches = array();
-
-            if (preg_match('/:(\w+)/', $condition, $matches)) {
-                $keys[] = $matches[1];
-
-                $condition = preg_replace('/:\w+/', '([^\/\?\#]+)', $condition, 1);
-            }
-        }
-
-        $values = array();
-
-        $result = preg_match($condition, $url, $values);
-
-        if (!$result) {
-            return false;
-        }
-
-        if (count($keys)) {
-            array_shift($values);
-
-            $this->request->set(
-                array_combine($keys, $values)
-            );
-        }
-
-        return true;
     }
 
     public function after($fn = null) {
@@ -157,10 +83,6 @@ final class Core extends Mixin {
 
     public function baseURL() {
         return $this->request->baseURL();
-    }
-
-    public function sanitizer($fn = null) {
-        return $this->request->sanitizer($fn);
     }
 
     public function handle($name) {

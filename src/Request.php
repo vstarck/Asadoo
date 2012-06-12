@@ -22,19 +22,42 @@ final class Request extends Mixin {
         $this->core = $core;
     }
 
+    /**
+     * @param string $match
+     * @return bool
+     */
+    public function matches($match) {
+
+    }
+
+    /**
+     * @param string $match
+     * @return bool
+     */
     public function has($match) {
         return strpos($this->url(), $match) !== false;
     }
 
+    /**
+     * @param string $key
+     * @param mixed|null $fallback
+     * @return mixed
+     */
     public function value($key, $fallback = null) {
         if (isset($this->variables[$key])) {
             return $this->sanitize(
-                $this->variables[$key], self::VALUE, $this->core->dependences);
+                $this->variables[$key], self::VALUE, $this->core->dependences
+            );
         }
 
         return $fallback;
     }
 
+    /**
+     * @param string $key
+     * @param mixed|null $fallback
+     * @return mixed
+     */
     public function post($key, $fallback = null) {
         if (isset($_POST[$key])) {
             return $this->sanitize($_POST[$key], self::POST, $this->core->dependences);
@@ -43,6 +66,11 @@ final class Request extends Mixin {
         return $fallback;
     }
 
+    /**
+     * @param string $key
+     * @param mixed|null $fallback
+     * @return mixed
+     */
     public function get($key, $fallback = null) {
         if (isset($_GET[$key])) {
             return $this->sanitize($_GET[$key], self::GET, $this->core->dependences);
@@ -51,6 +79,11 @@ final class Request extends Mixin {
         return $fallback;
     }
 
+    /**
+     * @param string|array $key
+     * @param mixed $value
+     * @return Request
+     */
     public function set($key, $value = null) {
         if (is_array($key)) {
             foreach ($key as $k => $v) {
@@ -65,7 +98,7 @@ final class Request extends Mixin {
     }
 
     public function path() {
-        $path = str_replace($this->getBaseURL(), '', $_SERVER['REQUEST_URI']);
+        $path = str_replace($this->baseURL(), '', $_SERVER['REQUEST_URI']);
 
         return preg_replace('/\?.+/', '', $path);
     }
@@ -102,7 +135,7 @@ final class Request extends Mixin {
     }
 
     public function sanitizer($fn = null) {
-        if(is_null($fn)) {
+        if (is_null($fn)) {
             return $this->sanitizer;
         }
 

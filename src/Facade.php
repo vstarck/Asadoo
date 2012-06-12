@@ -5,6 +5,9 @@ final class Facade extends Mixin {
     private $handler;
     private $core;
 
+    /**
+     * @param Core $core
+     */
     public function __construct($core) {
         $this->core = $core;
     }
@@ -15,6 +18,7 @@ final class Facade extends Mixin {
     private function getHandler() {
         if (!$this->handler) {
             $this->handler = new Handler($this->core);
+            $this->core->add($this->handler);
         }
 
         return $this->handler;
@@ -99,11 +103,7 @@ final class Facade extends Mixin {
     }
 
     public function sanitizer($fn = null) {
-        if(is_null($fn)) {
-            return $this->core->getSanitizer();
-        }
-
-        $this->core->setSanitizer($fn);
+        $this->core->request->sanitizer($fn);
 
         return $this;
     }
