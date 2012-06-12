@@ -71,7 +71,7 @@ final class Core extends Mixin {
             return true;
         }
 
-        if (is_string($condition)) {
+        if (!is_string($condition)) {
             if (trim($condition) == '*') {
                 return true;
             }
@@ -155,8 +155,8 @@ final class Core extends Mixin {
         return $this;
     }
 
-    public function getBaseURL() {
-        return $this->request->getBaseURL();
+    public function baseURL() {
+        return $this->request->baseURL();
     }
 
     public function sanitizer($fn = null) {
@@ -174,10 +174,4 @@ final class Core extends Mixin {
 
         return $this;
     }
-}
-
-function asadoo() {
-    return new \asadoo\Facade(
-        \asadoo\Core::getInstance()
-    );
 }
