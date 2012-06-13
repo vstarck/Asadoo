@@ -1,7 +1,7 @@
 <?php
 namespace asadoo;
 
-final class Dispatcher extends Mixin {
+final class Matcher extends Mixin {
     /**
      * @var Core
      */
@@ -24,19 +24,22 @@ final class Dispatcher extends Mixin {
 
     /**
      * @param Core $core
+     * @param Request $request
+     * @param Response $response
+     * @param \Pimple $dependences
      */
-    public function __construct($core) {
+    public function __construct($core, $request, $response, $dependences) {
         $this->core = $core;
-        $this->request = $core->request;
-        $this->response = $core->response;
-        $this->dependences = $core->dependences;
+        $this->request = $request;
+        $this->response = $response;
+        $this->dependences = $dependences;
     }
 
     /**
      * @param array $conditions
      * @return bool
      */
-    private function match($conditions) {
+    public function match($conditions) {
         foreach ($conditions as $condition) {
             if ($this->matchCondition($condition)) {
                 return true;
@@ -55,10 +58,10 @@ final class Dispatcher extends Mixin {
         }
 
         if (!is_string($condition)) {
-            if (trim($condition) == '*') {
+            if (trim($condition) === '*') {
                 return true;
             }
-            if (trim($condition) == '/') {
+            if (trim($condition) === '/') {
                 return str_replace('/', '', $this->request->path()) === '';
             }
             if ($this->matchStringCondition($condition)) {
@@ -76,7 +79,7 @@ final class Dispatcher extends Mixin {
     private function formatStringCondition($condition) {
         $condition = str_replace('*', '.*?', $condition);
 
-        if (substr($condition, -1, 1) == '/') {
+        if (substr($condition, -1, 1) === '/') {
             $condition = substr($condition, 0, -1) . '/?';
         }
 
@@ -85,10 +88,7 @@ final class Dispatcher extends Mixin {
         return $condition;
     }
 
-    // TODO refactor
     private function matchStringCondition($condition) {
-        $url = $this->request->path();
-
         $keys = array();
 
         $condition = '/^' . $this->formatStringCondition($condition) . '/';
@@ -105,12 +105,14 @@ final class Dispatcher extends Mixin {
 
         $values = array();
 
-        $result = preg_match($condition, $url, $values);
+        $result = preg_match($condition, $this->request->path(), $values);
 
-        if (!$result) {
-            return false;
-        }
+        $this->setupValues($keys, $values);
 
+        return $result;
+    }
+
+    private function setupValues($keys, $values) {
         if (count($keys)) {
             array_shift($values);
 
@@ -118,7 +120,5 @@ final class Dispatcher extends Mixin {
                 array_combine($keys, $values)
             );
         }
-
-        return true;
     }
 }

@@ -6,6 +6,27 @@ final class Core extends Mixin {
      * @var Core
      */
     private static $instance;
+
+    /**
+     * @var \asadoo\Request
+     */
+    private $request;
+
+    /**
+     * @var \asadoo\Response
+     */
+    private $response;
+
+    /**
+     * @var \asadoo\Matcher
+     */
+    private $matcher;
+
+    /**
+     * @var \Pimple
+     */
+    private $dependences;
+
     private $handlers = array();
     private $interrupted = false;
     private $started = false;
@@ -14,10 +35,11 @@ final class Core extends Mixin {
     private $afterCallback = null;
 
     private function __construct() {
-        $this->request = new Request($this);
-        $this->response = new Response($this);
-        $this->responseMatcher = new Dispatcher($this);
-        $this->dependences = new \Pimple();
+        $request = $this->request = new Request($this);
+        $response = $this->response = new Response($this);
+        $dependences = $this->dependences = new \Pimple();
+
+        $this->matcher = new Matcher($this, $request, $response, $dependences);
     }
 
     private function __clone() {
@@ -45,7 +67,7 @@ final class Core extends Mixin {
                 break;
             }
 
-            if ($this->request->match($handler->conditions)) {
+            if ($this->matcher->match($handler->conditions)) {
                 $fn = $handler->fn;
                 $fn($this->request, $this->response, $this->dependences);
             }
@@ -87,10 +109,10 @@ final class Core extends Mixin {
 
     public function handle($name) {
         foreach ($this->handlers as $handler) {
-            if($handler->name() == $name) {
+            if($handler->name() === $name) {
                 $fn = $handler->fn;
                 $fn($this->request, $this->response, $this->dependences);
-                return $this;
+                break;
             }
         }
 

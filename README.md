@@ -160,7 +160,6 @@ asadoo\Facade
     sanitizer(Callable $fn)
     start()
     version()
-
 ```
 
 ```
