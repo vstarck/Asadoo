@@ -16,7 +16,6 @@ final class Request extends Mixin {
      */
     private $core;
     private $variables = array();
-    private $sanitizer;
 
     public function __construct($core) {
         $this->core = $core;
@@ -27,15 +26,7 @@ final class Request extends Mixin {
      * @return bool
      */
     public function matches($match) {
-
-    }
-
-    /**
-     * @param string $match
-     * @return bool
-     */
-    public function has($match) {
-        return strpos($this->url(), $match) !== false;
+        return preg_match($match, $this->url()) !== false;
     }
 
     /**
@@ -45,9 +36,7 @@ final class Request extends Mixin {
      */
     public function value($key, $fallback = null) {
         if (isset($this->variables[$key])) {
-            return $this->sanitize(
-                $this->variables[$key], self::VALUE, $this->core->dependences
-            );
+            return $this->sanitize($this->variables[$key], self::VALUE);
         }
 
         return $fallback;
@@ -60,7 +49,7 @@ final class Request extends Mixin {
      */
     public function post($key, $fallback = null) {
         if (isset($_POST[$key])) {
-            return $this->sanitize($_POST[$key], self::POST, $this->core->dependences);
+            return $this->sanitize($_POST[$key], self::POST);
         }
 
         return $fallback;
@@ -73,7 +62,7 @@ final class Request extends Mixin {
      */
     public function get($key, $fallback = null) {
         if (isset($_GET[$key])) {
-            return $this->sanitize($_GET[$key], self::GET, $this->core->dependences);
+            return $this->sanitize($_GET[$key], self::GET);
         }
 
         return $fallback;
@@ -126,22 +115,8 @@ final class Request extends Mixin {
         return isset($parts[$index]) ? $parts[$index] : null;
     }
 
-    private function sanitize($value, $type, $dependences) {
-        if (is_callable($fn = $this->sanitizer)) {
-            return $fn($value, $type, $dependences);
-        }
-
-        return $value;
-    }
-
-    public function sanitizer($fn = null) {
-        if (is_null($fn)) {
-            return $this->sanitizer;
-        }
-
-        $this->sanitizer = $fn;
-
-        return $this;
+    public function sanitize($value, $type = null) {
+        return $this->core->sanitize($value, $type);
     }
 
     /**
@@ -173,7 +148,7 @@ final class Request extends Mixin {
         return $_SERVER['SERVER_PORT'];
     }
 
-    public function method() {
+    public function method($is = null) {
         return $_SERVER['REQUEST_METHOD'];
     }
 

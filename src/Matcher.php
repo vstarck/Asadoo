@@ -57,7 +57,7 @@ final class Matcher extends Mixin {
             return true;
         }
 
-        if (!is_string($condition)) {
+        if (is_string($condition)) {
             if (trim($condition) === '*') {
                 return true;
             }

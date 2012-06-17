@@ -1,6 +1,8 @@
 <?php
-function asadoo() {
-    return new \asadoo\Facade(
-        \asadoo\Core::getInstance()
-    );
+namespace {
+    function asadoo() {
+        return new \asadoo\Facade(
+            \asadoo\Core::getInstance()
+        );
+    }
 }

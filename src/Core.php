@@ -25,7 +25,7 @@ final class Core extends Mixin {
     /**
      * @var \Pimple
      */
-    private $dependences;
+    public $dependences;
 
     private $handlers = array();
     private $interrupted = false;
@@ -33,6 +33,9 @@ final class Core extends Mixin {
 
     private $beforeCallback = null;
     private $afterCallback = null;
+
+    private $sanitizer = null;
+    private $memo = null;
 
     private function __construct() {
         $request = $this->request = new Request($this);
@@ -68,14 +71,23 @@ final class Core extends Mixin {
             }
 
             if ($this->matcher->match($handler->conditions)) {
-                $fn = $handler->fn;
-                $fn($this->request, $this->response, $this->dependences);
+                $this->exec($handler);
             }
         }
 
         if (!$this->interrupted) {
             $this->response->end();
         }
+    }
+
+    private function exec(Handler $handler) {
+        $fn = $handler->fn;
+        $this->memo = $fn(
+            $this->memo,
+            $this->request,
+            $this->response,
+            $this->dependences
+        );
     }
 
     public function end() {
@@ -110,12 +122,25 @@ final class Core extends Mixin {
     public function handle($name) {
         foreach ($this->handlers as $handler) {
             if($handler->name() === $name) {
-                $fn = $handler->fn;
-                $fn($this->request, $this->response, $this->dependences);
+                $this->exec($handler);
                 break;
             }
         }
 
         return $this;
+    }
+
+    public function sanitizer($fn = null) {
+        if (is_null($fn)) {
+            return $this->sanitizer;
+        }
+
+        $this->sanitizer = $fn;
+
+        return $this;
+    }
+
+    public function sanitize($value, $type) {
+        return $value;
     }
 }

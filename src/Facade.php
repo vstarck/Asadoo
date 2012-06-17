@@ -4,6 +4,7 @@ namespace asadoo;
 final class Facade extends Mixin {
     private $handler;
     private $core;
+    private $conditions = array();
 
     /**
      * @param Core $core
@@ -103,7 +104,7 @@ final class Facade extends Mixin {
     }
 
     public function sanitizer($fn = null) {
-        $this->core->request->sanitizer($fn);
+        $this->core->sanitizer($fn);
 
         return $this;
     }
