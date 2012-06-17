@@ -14,14 +14,14 @@ class Builder {
         return $this;
     }
 
-    public function add_file($file) {
-        $this->add($file);
+    public function add_file($file, $prefix = null) {
+        $this->add($file, $prefix);
         return $this;
     }
 
-    public function add_files($files) {
+    public function add_files($files, $prefix = null) {
         foreach ($files as $file) {
-            $this->add($file);
+            $this->add($file, $prefix);
         }
 
         return $this;
@@ -67,8 +67,8 @@ class Builder {
         return $this;
     }
 
-    private function add($file) {
-        $file = $this->base_path . $file;
+    private function add($file, $prefix  = null) {
+        $file = (is_null($prefix) ? $this->base_path : $prefix) . $file;
 
         if (is_readable($file) && !is_dir($file)) {
             $this->content .= $this->apply_format(file_get_contents($file), $file);
@@ -110,6 +110,10 @@ class Builder {
             }
         }
         return $dirs;
+    }
+
+    public function text() {
+        return $this->content;
     }
 
     public function result() {
