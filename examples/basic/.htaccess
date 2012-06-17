@@ -1,6 +1,5 @@
-RewriteEngine on
-# Capturamos todos los requests, incluyendo css, js y assets
-RewriteCond $1 (.+)
-RewriteRule (.*) index.php [QSA]
-
-#?__req=$1 [QSA]
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+    RewriteCond $1 !([a-z]+\.(css|js|png|jpe?g|gif))$
+    RewriteRule (.*) index.php [QSA]
+</IfModule>
