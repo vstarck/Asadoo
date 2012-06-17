@@ -16,20 +16,33 @@ Requires PHP 5.3+
  <a href="#routing">Routing</a>
 </h3>
 
+Basic rules
+
+```php
+<?php
+asadoo()
+    ->on('/home')
+    ->handle(function($memo, $req, $res, $dependences) {
+        // ...
+    });
+
+asadoo()->start();
+```
+
 Using multiple rules
 
 ```php
 <?php
 asadoo()
-    ->on('/view/:id')
     ->on('/view')
-    ->on(function($request, $response, $dependences) {
-        return $request->isGET() && $request->has('view');
+    ->on('/view/:id')
+    ->on(function($memo, $req, $res, $dependences) {
+        return $req->isGET() && $req->has('view');
     })
-    ->handle(function($request, $response, $dependences) {
-        $id = $request->value('id', 'ID not found!');
+    ->handle(function($memo, $req, $res, $dependences) {
+        $id = $req->value('id', 'ID not found!');
 
-        $response->end($id);
+        $res->end($id);
     });
 
 asadoo()->start();
@@ -39,23 +52,29 @@ Capturing by POST / GET / PUT / DELETE
 
 ```php
 <?php
-asadoo()
-    ->get('/user', function($request, $response, $dependences) {
-        // ...
-    });
 
 asadoo()
-    ->post('/user', function($request, $response, $dependences) {
-        // ...
+    ->get('/user/logout', function($memo, $req, $res, $dependences) {
+
     });
 
+// Multiple actions
 asadoo()
-    ->put('/user', function($request, $response, $dependences) {
-        // ...
-    });
+    // Routes
+    ->on('/data/:entity')
+    ->on('/data/:entity/:id')
 
-asadoo()
-    ->delete('/user', function($request, $response, $dependences) {
+    // Actions
+    ->get(function($memo, $req, $res, $dependences) {
+        // ...
+    })
+    ->post(function($memo, $req, $res, $dependences) {
+        // ...
+    })
+    ->put(function($memo, $req, $res, $dependences) {
+        // ...
+    })
+    ->delete(function($memo, $req, $res, $dependences) {
         // ...
     });
 
@@ -69,25 +88,51 @@ Explicit routing (asadoo\Request#forward)
 // Named handlers
 asadoo()
     ->name('handler-1')
-    ->handle(function($request, $response, $dependences) {
-        $response->write('handler-1</br>');
+    ->handle(function($memo, $req, $res, $dependences) {
+        $res->write('handler-1</br>');
     });
 
 asadoo()
     ->name('handler-2')
-    ->handle(function($request, $response, $dependences) {
-        $response->write('handler-2</br>');
+    ->handle(function($memo, $req, $res, $dependences) {
+        $res->write('handler-2</br>');
     });
 
 // Our catch-all handler
 asadoo()
     ->on('*')
-    ->handle(function($request, $response, $dependences) {
+    ->handle(function($memo, $req, $res, $dependences) {
         // Forward the request to another handler
-        $request->forward('handler-' . rand(1, 2));
+        $req->forward('handler-' . rand(1, 2));
     });
 
 asadoo()->start();
+```
+<h3>
+ <a name="chaining"></a>
+ <a href="#chaining">Result chaining</a>
+</h3>
+```php
+<?php
+asadoo()
+    ->on('*')
+    ->handle(function($memo, $req, $res, $dependences) {
+        return 'Hello ';
+    });
+
+asadoo()
+    ->on('*')
+    ->handle(function($memo, $req, $res, $dependences) {
+        return $memo . 'World';
+    });
+
+asadoo()
+    ->on('*')
+    ->handle(function($memo, $req, $res, $dependences) {
+        $res->end($memo . '!');
+    });
+
+asadoo()->start(); // Outputs 'Hello World!'
 ```
 
 <h3>
@@ -95,19 +140,19 @@ asadoo()->start();
  <a href="#sanitize">Optional input sanitize</a>
 </h3>
 
-You can define an annonymus function to sanitize GET/POST and values for all handlers. (ie to help prevent SQL Injection)
+You can define an anonymous function to sanitize GET/POST and values for all handlers. (ie to help prevent SQL Injection)
 
 ````php
 <?php
-asadoo()->setSanitizer(function($value, $type, $dependences) {
+asadoo()->sanitizer(function($value, $type, $dependences) {
     return preg_replace('/[^a-z\d]/', '', $value);
 });
 
 asadoo()
     ->on('/inject/get/')
-    ->handle(function($request, $response, $dependences) {
-        $response->end(
-            $request->get('value') // gets the sanitized value
+    ->handle(function($memo, $req, $res, $dependences) {
+        $res->end(
+            $req->get('value') // gets the sanitized value
         );
     });
 
@@ -127,17 +172,17 @@ You can augment base classes at runtime
 class ResponseExtension {
     // Extensions methods always have as its first argument a
     // reference to the actual object
-    public function helloWorld($responseInstance) {
-        $responseInstance->end('Hello World!');
+    public function helloWorld($resInstance) {
+        $resInstance->end('Hello World!');
     }
 }
 
 // Mix it!
 asadoo\Response::mix(new ResponseExtension());
 
-asadoo()->get('*', function($request, $response, $dependences) {
+asadoo()->get('*', function($memo, $req, $res, $dependences) {
     // Using the new method
-    $response->helloWorld();
+    $res->helloWorld();
 });
 
 asadoo()->start();
@@ -183,7 +228,6 @@ asadoo\Request
     scheme()
     segment(int $index)
     set(string $key, mixed $value)
-    setSanitizer($fn)
     url()
     value()
 ```
