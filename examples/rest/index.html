@@ -1,0 +1,82 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+    <title>REST services</title>
+    <style>
+        input, textarea, select {
+            border: solid 1px #ccc;
+        }
+
+        textarea {
+            width: 400px;
+            height: 200px;
+            background: #ddd;
+        }
+    </style>
+</head>
+<body>
+<h1>REST services</h1>
+<select>
+    <option value="GET">GET</option>
+    <option value="DELETE">DELETE</option>
+    <option value="POST">POST</option>
+    <option value="PUT">PUT</option>
+</select>
+<input type="text" id="id" placeholder="id"/>
+<input type="text" id="name" placeholder="name"/>
+<input type="text" id="lastname" placeholder="lastname"/>
+<button>Send</button>
+<div>
+    <textarea readonly></textarea>
+</div>
+
+<script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js"></script>
+<script type="text/javascript">
+    $(function () {
+        function send(type, args) {
+
+        }
+
+        function handle(response) {
+
+        }
+
+        function enable(sel) {
+            $(sel).attr('disabled', false).val('');
+        }
+
+        function disable(sel) {
+            $(sel).attr('disabled', true).val('');
+        }
+
+        function setup() {
+            var type = $('select').val();
+
+            switch (type) {
+                case 'GET':
+                case 'DELETE':
+                    disable('#name, #lastname');
+                    enable('#id');
+                    break;
+                case 'POST':
+                    enable('#name, #lastname');
+                    disable('#id');
+                    break;
+                case 'PUT':
+                    enable('#name, #lastname');
+                    enable('#id');
+                    break;
+            }
+        }
+
+        $('select').on('change', setup);
+
+        $('button').on('click', function () {
+
+        });
+
+        setup();
+    });
+</script>
+</body>
+</html>

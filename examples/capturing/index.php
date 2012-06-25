@@ -1,11 +1,21 @@
 <?php
 include '../../dist/asadoo.php';
 
+/*
+ * Matches
+ *
+ *  /           -> "Hello world"
+ *  /foo        -> "Hello foo"
+ *  /foo/       -> "Hello foo"
+ *  /foo/bar    -> "Hello foo"
+ */
+
 asadoo()
     ->on('/')
     ->on('/:name')
-    ->handle(function($memo, $req, $res, $dependences) {
-        $res->write('Hello ', $req->value('name', 'world'), '!');
+    ->on('/:name/*')
+    ->handle(function($memo, $name = 'world') {
+        $this->res->write('Hello ', $name);
     });
 
 asadoo()->start();

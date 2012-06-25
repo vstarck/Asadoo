@@ -1,7 +1,9 @@
 <?php
 namespace asadoo;
 
-final class Response extends Mixin {
+final class Response {
+    use Mixable;
+
     private $core;
     private $code = 200;
     private $formatters = array();
@@ -84,5 +86,7 @@ final class Response extends Mixin {
 
     public function format($formatter) {
         $this->formatters[] = $formatter;
+
+        return $this;
     }
 }

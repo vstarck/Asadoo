@@ -1,7 +1,9 @@
 <?php
 namespace asadoo;
 
-final class Core extends Mixin {
+final class Core {
+use Mixable;
+
     /**
      * @var Core
      */
@@ -23,9 +25,9 @@ final class Core extends Mixin {
     private $matcher;
 
     /**
-     * @var \Pimple
+     * @var \asadoo\ExecutionContext
      */
-    public $dependences;
+    private $executionContext;
 
     private $handlers = array();
     private $interrupted = false;
@@ -40,9 +42,9 @@ final class Core extends Mixin {
     private function __construct() {
         $request = $this->request = new Request($this);
         $response = $this->response = new Response($this);
-        $dependences = $this->dependences = new \Pimple();
+        $executionContext = $this->executionContext = new ExecutionContext($request, $response);
 
-        $this->matcher = new Matcher($this, $request, $response, $dependences);
+        $this->matcher = new Matcher($this, $executionContext);
     }
 
     private function __clone() {
@@ -71,7 +73,7 @@ final class Core extends Mixin {
             }
 
             if ($this->matcher->match($handler->conditions)) {
-                $this->exec($handler);
+                $this->execHandler($handler);
             }
         }
 
@@ -80,14 +82,36 @@ final class Core extends Mixin {
         }
     }
 
-    private function exec(Handler $handler) {
-        $fn = $handler->fn;
-        $this->memo = $fn(
-            $this->memo,
-            $this->request,
-            $this->response,
-            $this->dependences
-        );
+    private function execHandler(Handler $handler) {
+        foreach ($handler->handlers as $fn) {
+            $this->memo = $this->exec($fn);
+        }
+    }
+
+    private function fillArguments($fn, $arguments = array()) {
+        $reflection = new \ReflectionFunction($fn);
+        $names = $reflection->getParameters();
+
+        array_shift($names);
+
+        foreach ($names as $arg) {
+            $arguments[] = $this->request->value(
+                $arg->getName(),
+                $arg->isOptional() ? $arg->getDefaultValue() : null
+            );
+        }
+
+        return $arguments;
+    }
+
+    public function exec($fn) {
+        $arguments = $this->fillArguments($fn, array($this->memo));
+
+        return call_user_func_array(\Closure::bind(
+            $fn,
+            $this->executionContext,
+            $this->executionContext
+        ), $arguments);
     }
 
     public function end() {
@@ -99,7 +123,7 @@ final class Core extends Mixin {
         if ($fn) {
             $this->afterCallback = $fn;
         } else if (is_callable($fn = $this->afterCallback)) {
-            $fn($this->request, $this->response, $this->dependences);
+            $this->memo = $this->exec($fn);
         }
 
         return $this;
@@ -109,7 +133,7 @@ final class Core extends Mixin {
         if ($fn) {
             $this->beforeCallback = $fn;
         } else if (is_callable($fn = $this->beforeCallback)) {
-            $fn($this->request, $this->response, $this->dependences);
+            $this->memo = $this->exec($fn);
         }
 
         return $this;
@@ -121,7 +145,7 @@ final class Core extends Mixin {
 
     public function handle($name) {
         foreach ($this->handlers as $handler) {
-            if($handler->name() === $name) {
+            if ($handler->name() === $name) {
                 $this->exec($handler);
                 break;
             }
@@ -142,5 +166,13 @@ final class Core extends Mixin {
 
     public function sanitize($value, $type) {
         return $value;
+    }
+
+    public function matches($condition) {
+        return $this->matcher->matchCondition($condition);
+    }
+
+    public function result() {
+        return $this->memo;
     }
 }

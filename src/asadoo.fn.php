@@ -1,8 +1,8 @@
 <?php
 namespace {
-    function asadoo() {
+    function asadoo($instance = null) {
         return new \asadoo\Facade(
-            \asadoo\Core::getInstance()
+            is_null($instance) ? \asadoo\Core::getInstance(): $instance
         );
     }
 }

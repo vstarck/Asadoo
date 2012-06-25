@@ -1,10 +1,16 @@
 <?php
 namespace asadoo;
 
-final class Handler extends Mixin{
+final class Handler {
+    use Mixable;
+
     public $conditions = array();
-    public $fn;
+    public $handlers = array();
     private $handlerName;
+
+    public function __construct($core) {
+        $core->add($this);
+    }
 
     public function on($condition) {
         $this->conditions[] = $condition;
@@ -12,8 +18,7 @@ final class Handler extends Mixin{
     }
 
     public function handle($fn) {
-        $this->fn = $fn;
-
+        $this->handlers[] = $fn;
         return $this;
     }
 

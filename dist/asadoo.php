@@ -5,17 +5,96 @@
  * @see https://github.com/Aijoona/Asadoo
  * @author Valentin Starck
  */
-
+/*
+ * This file is part of Pimple.
+ *
+ * Copyright (c) 2009 Fabien Potencier
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is furnished
+ * to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ * THE SOFTWARE.
+ */
+namespace {
+    class Pimple implements ArrayAccess {
+        private $values;
+        function __construct(array $values = array()) {
+            $this->values = $values;
+        }
+        function offsetSet($id, $value) {
+            $this->values[$id] = $value;
+        }
+        function offsetGet($id) {
+            if (!array_key_exists($id, $this->values)) {
+                throw new InvalidArgumentException(sprintf('Identifier "%s" is not defined.', $id));
+            }
+            return $this->values[$id] instanceof Closure ? $this->values[$id]($this) : $this->values[$id];
+        }
+        function offsetExists($id) {
+            return array_key_exists($id, $this->values);
+        }
+        function offsetUnset($id) {
+            unset($this->values[$id]);
+        }
+        function share(Closure $callable) {
+            return function ($c) use ($callable) {
+                static $object;
+                if (is_null($object)) {
+                    $object = $callable($c);
+                }
+                return $object;
+            };
+        }
+        function protect(Closure $callable) {
+            return function ($c) use ($callable) {
+                return $callable;
+            };
+        }
+        function raw($id) {
+            if (!array_key_exists($id, $this->values)) {
+                throw new InvalidArgumentException(sprintf('Identifier "%s" is not defined.', $id));
+            }
+            return $this->values[$id];
+        }
+        function extend($id, Closure $callable) {
+            if (!array_key_exists($id, $this->values)) {
+                throw new InvalidArgumentException(sprintf('Identifier "%s" is not defined.', $id));
+            }
+            $factory = $this->values[$id];
+            if (!($factory instanceof Closure)) {
+                throw new InvalidArgumentException(sprintf('Identifier "%s" does not contain an object definition.', $id));
+            }
+            return $this->values[$id] = function ($c) use ($callable, $factory) {
+                return $callable($factory($c), $c);
+            };
+        }
+        function keys() {
+            return array_keys($this->values);
+        }
+    }
+}
 namespace asadoo {
-class Mixin {
+trait Mixable {
     private static $mixes = array();
     public static function mix($obj) {
-        self::$mixes[] = $obj;
+       self::$mixes[] = $obj;
     }
     public function __call($name, $arguments) {
-        $mixes = self::$mixes;
         array_unshift($arguments, $this);
-        foreach($mixes as $mix) {
+        foreach(self::mixes as $mix) {
             if(is_object($mix) && method_exists($mix, $name)) {
                 return call_user_func_array(array($mix, $name), $arguments);
             }
@@ -23,27 +102,13 @@ class Mixin {
         throw new \ErrorException('Method not found: ' . $name);
     }
 }
-final class Core extends Mixin {
-    /**
-     * @var Core
-     */
+final class Core {
+use Mixable;
     private static $instance;
-    /**
-     * @var \asadoo\Request
-     */
     private $request;
-    /**
-     * @var \asadoo\Response
-     */
     private $response;
-    /**
-     * @var \asadoo\Matcher
-     */
     private $matcher;
-    /**
-     * @var \Pimple
-     */
-    public $dependences;
+    private $executionContext;
     private $handlers = array();
     private $interrupted = false;
     private $started = false;
@@ -54,8 +119,8 @@ final class Core extends Mixin {
     private function __construct() {
         $request = $this->request = new Request($this);
         $response = $this->response = new Response($this);
-        $dependences = $this->dependences = new \Pimple();
-        $this->matcher = new Matcher($this, $request, $response, $dependences);
+        $executionContext = $this->executionContext = new ExecutionContext($request, $response);
+        $this->matcher = new Matcher($this, $executionContext);
     }
     private function __clone() {
     }
@@ -76,21 +141,37 @@ final class Core extends Mixin {
                 break;
             }
             if ($this->matcher->match($handler->conditions)) {
-                $this->exec($handler);
+                $this->execHandler($handler);
             }
         }
         if (!$this->interrupted) {
             $this->response->end();
         }
     }
-    private function exec(Handler $handler) {
-        $fn = $handler->fn;
-        $this->memo = $fn(
-            $this->memo,
-            $this->request,
-            $this->response,
-            $this->dependences
-        );
+    private function execHandler(Handler $handler) {
+        foreach ($handler->handlers as $fn) {
+            $this->memo = $this->exec($fn);
+        }
+    }
+    private function fillArguments($fn, $arguments = array()) {
+        $reflection = new \ReflectionFunction($fn);
+        $names = $reflection->getParameters();
+        array_shift($names);
+        foreach ($names as $arg) {
+            $arguments[] = $this->request->value(
+                $arg->getName(),
+                $arg->isOptional() ? $arg->getDefaultValue() : null
+            );
+        }
+        return $arguments;
+    }
+    public function exec($fn) {
+        $arguments = $this->fillArguments($fn, array($this->memo));
+        return call_user_func_array(\Closure::bind(
+            $fn,
+            $this->executionContext,
+            $this->executionContext
+        ), $arguments);
     }
     public function end() {
         $this->interrupted = true;
@@ -100,7 +181,7 @@ final class Core extends Mixin {
         if ($fn) {
             $this->afterCallback = $fn;
         } else if (is_callable($fn = $this->afterCallback)) {
-            $fn($this->request, $this->response, $this->dependences);
+            $this->memo = $this->exec($fn);
         }
         return $this;
     }
@@ -108,7 +189,7 @@ final class Core extends Mixin {
         if ($fn) {
             $this->beforeCallback = $fn;
         } else if (is_callable($fn = $this->beforeCallback)) {
-            $fn($this->request, $this->response, $this->dependences);
+            $this->memo = $this->exec($fn);
         }
         return $this;
     }
@@ -117,7 +198,7 @@ final class Core extends Mixin {
     }
     public function handle($name) {
         foreach ($this->handlers as $handler) {
-            if($handler->name() === $name) {
+            if ($handler->name() === $name) {
                 $this->exec($handler);
                 break;
             }
@@ -134,8 +215,15 @@ final class Core extends Mixin {
     public function sanitize($value, $type) {
         return $value;
     }
+    public function matches($condition) {
+        return $this->matcher->matchCondition($condition);
+    }
+    public function result() {
+        return $this->memo;
+    }
 }
-final class Request extends Mixin {
+final class Request {
+    use Mixable;
     const POST = 'POST';
     const GET = 'GET';
     const PUT = 'PUT';
@@ -143,59 +231,32 @@ final class Request extends Mixin {
     const VALUE = 'VALUE';
     const HTTP = 'HTTP';
     const HTTPS = 'HTTPS';
-    /**
-     * @var Core
-     */
     private $core;
     private $variables = array();
     public function __construct($core) {
         $this->core = $core;
     }
-    /**
-     * @param string $match
-     * @return bool
-     */
     public function matches($match) {
         return preg_match($match, $this->url()) !== false;
     }
-    /**
-     * @param string $key
-     * @param mixed|null $fallback
-     * @return mixed
-     */
     public function value($key, $fallback = null) {
         if (isset($this->variables[$key])) {
             return $this->sanitize($this->variables[$key], self::VALUE);
         }
         return $fallback;
     }
-    /**
-     * @param string $key
-     * @param mixed|null $fallback
-     * @return mixed
-     */
     public function post($key, $fallback = null) {
         if (isset($_POST[$key])) {
             return $this->sanitize($_POST[$key], self::POST);
         }
         return $fallback;
     }
-    /**
-     * @param string $key
-     * @param mixed|null $fallback
-     * @return mixed
-     */
     public function get($key, $fallback = null) {
         if (isset($_GET[$key])) {
             return $this->sanitize($_GET[$key], self::GET);
         }
         return $fallback;
     }
-    /**
-     * @param string|array $key
-     * @param mixed $value
-     * @return Request
-     */
     public function set($key, $value = null) {
         if (is_array($key)) {
             foreach ($key as $k => $v) {
@@ -230,11 +291,6 @@ final class Request extends Mixin {
     public function sanitize($value, $type = null) {
         return $this->core->sanitize($value, $type);
     }
-    /**
-     * @see https://github.com/codeguy/Slim/blob/master/Slim/Http/Uri.php#L69
-     * @static
-     * @return string
-     */
     public static function baseURL() {
         $requestUri = isset($_SERVER['REQUEST_URI']) ? $_SERVER['REQUEST_URI'] : $_SERVER['PHP_SELF'];
         $scriptName = $_SERVER['SCRIPT_NAME'];
@@ -278,7 +334,8 @@ final class Request extends Mixin {
         $this->core->handle($name);
     }
 }
-final class Response extends Mixin {
+final class Response {
+    use Mixable;
     private $core;
     private $code = 200;
     private $formatters = array();
@@ -342,41 +399,19 @@ final class Response extends Mixin {
     }
     public function format($formatter) {
         $this->formatters[] = $formatter;
+        return $this;
     }
 }
-final class Matcher extends Mixin {
-    /**
-     * @var Core
-     */
+final class Matcher {
+    use Mixable;
     private $core;
-    /**
-     * @var Request
-     */
+    private $executionContext;
     private $request;
-    /**
-     * @var Response
-     */
-    private $response;
-    /**
-     * @var \Pimple
-     */
-    private $dependences;
-    /**
-     * @param Core $core
-     * @param Request $request
-     * @param Response $response
-     * @param \Pimple $dependences
-     */
-    public function __construct($core, $request, $response, $dependences) {
+    public function __construct($core, $executionContext) {
         $this->core = $core;
-        $this->request = $request;
-        $this->response = $response;
-        $this->dependences = $dependences;
+        $this->executionContext = $executionContext;
+        $this->request = $executionContext->request;
     }
-    /**
-     * @param array $conditions
-     * @return bool
-     */
     public function match($conditions) {
         foreach ($conditions as $condition) {
             if ($this->matchCondition($condition)) {
@@ -385,13 +420,9 @@ final class Matcher extends Mixin {
         }
         return false;
     }
-    /**
-     * @param mixed $condition
-     * @return bool
-     */
-    private function matchCondition($condition) {
-        if (is_callable($condition) && $condition($this->request, $this->response, $this->dependences)) {
-            return true;
+    public function matchCondition($condition) {
+        if (is_callable($condition)) {
+            return $this->core->exec($condition);
         }
         if (is_string($condition)) {
             if (trim($condition) === '*') {
@@ -406,14 +437,12 @@ final class Matcher extends Mixin {
         }
         return false;
     }
-    /**
-     * @param string $condition
-     * @return string
-     */
     private function formatStringCondition($condition) {
         $condition = str_replace('*', '.*?', $condition);
         if (substr($condition, -1, 1) === '/') {
             $condition = substr($condition, 0, -1) . '/?';
+        } else {
+            $condition .= '/?';
         }
         $condition = preg_replace('/\//', '\/', $condition) . '$';
         return $condition;
@@ -430,28 +459,32 @@ final class Matcher extends Mixin {
         }
         $values = array();
         $result = preg_match($condition, $this->request->path(), $values);
-        $this->setupValues($keys, $values);
+        if ($result) {
+            $this->setupValues($keys, $values);
+        }
         return $result;
     }
     private function setupValues($keys, $values) {
-        if (count($keys)) {
-            array_shift($values);
-            $this->request->set(
-                array_combine($keys, $values)
-            );
+        array_shift($values);
+        if (count($keys) && count($values) === count($keys)) {
+            $this->request->set(array_combine($keys, $values));
         }
     }
 }
-final class Handler extends Mixin{
+final class Handler {
+    use Mixable;
     public $conditions = array();
-    public $fn;
+    public $handlers = array();
     private $handlerName;
+    public function __construct($core) {
+        $core->add($this);
+    }
     public function on($condition) {
         $this->conditions[] = $condition;
         return $this;
     }
     public function handle($fn) {
-        $this->fn = $fn;
+        $this->handlers[] = $fn;
         return $this;
     }
     public function name($name = null) {
@@ -462,33 +495,29 @@ final class Handler extends Mixin{
         return $this->handlerName;
     }
 }
-final class Facade extends Mixin {
+final class Facade {
+    use Mixable;
     private $handler;
     private $core;
-    private $conditions = array();
-    /**
-     * @param Core $core
-     */
     public function __construct($core) {
         $this->core = $core;
     }
-    /**
-     * @return Handler
-     */
     private function getHandler() {
         if (!$this->handler) {
             $this->handler = new Handler($this->core);
-            $this->core->add($this->handler);
         }
         return $this->handler;
     }
-    public function __call($name, $arguments) {
+    public function __call($name, $args) {
         $handler = $this->getHandler();
         if (method_exists($handler, $name)) {
-            call_user_func_array(array($handler, $name), $arguments);
+            call_user_func_array(array($handler, $name), $args);
             return $this;
         }
-        return \asadoo\Mixin::__call($name, $arguments);
+        if (preg_match('/^(get|delete|post|put)$/', strtolower($name))) {
+            return $this->method(strtoupper($name), 1);
+        }
+        return \asadoo\Mixin::__call($name, $args);
     }
     public function dependences() {
         return $this->core->dependences;
@@ -497,45 +526,35 @@ final class Facade extends Mixin {
         $this->core->start();
         return $this;
     }
-    public function post($route, $fn) {
-        return $this
-                ->getHandler()
-                ->on($route)
-                ->handle(function($request, $response, $dependences) use($fn) {
-            if ($request->isPOST()) {
-                $fn($request, $response, $dependences);
+    public function method($method, $route, $fn = null) {
+        $handler = $this->getHandler();
+        if(is_callable($route)) {
+            $fn = $route;
+            $route = null;
+        }
+        if(!is_null($route)) {
+            $handler->on($route);
+        }
+        $handler->handle(function($memo, $req, $res, $dependences) use($method, $fn, $route) {
+            //echo "Method: $method - Route: $route<hr/>";
+            if ($req->method() !== $method || (is_null($route) || $this->core->matches($route))) {
+                return $memo;
             }
+            return $fn($memo, $req, $res, $dependences);
         });
+        return $this;
     }
-    public function get($route, $fn) {
-        return $this
-                ->getHandler()
-                ->on($route)
-                ->handle(function($request, $response, $dependences) use($fn) {
-            if ($request->isGET()) {
-                $fn($request, $response, $dependences);
-            }
-        });
+    public function post($route, $fn = null) {
+        return $this->method(Request::POST, $route, $fn);
     }
-    public function put($route, $fn) {
-        return $this
-                ->getHandler()
-                ->on($route)
-                ->handle(function($request, $response, $dependences) use($fn) {
-            if ($request->isPUT()) {
-                $fn($request, $response, $dependences);
-            }
-        });
+    public function get($route, $fn = null) {
+        return $this->method(Request::GET, $route, $fn);
     }
-    public function delete($route, $fn) {
-        return $this
-                ->getHandler()
-                ->on($route)
-                ->handle(function($request, $response, $dependences) use($fn) {
-            if ($request->isDELETE()) {
-                $fn($request, $response, $dependences);
-            }
-        });
+    public function put($route, $fn = null) {
+        return $this->method(Request::PUT, $route, $fn);
+    }
+    public function delete($route, $fn = null) {
+        return $this->method(Request::DELETE, $route, $fn);
     }
     public function after($fn) {
         $this->core->after($fn);
@@ -557,182 +576,19 @@ final class Facade extends Mixin {
         return '0.2';
     }
 }
-} // asadoo
-/*
- * This file is part of Pimple.
- *
- * Copyright (c) 2009 Fabien Potencier
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is furnished
- * to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
- * THE SOFTWARE.
- */
-namespace {
-    /**
-     * Pimple main class.
-     *
-     * @package pimple
-     * @author  Fabien Potencier
-     */
-    class Pimple implements ArrayAccess {
-        private $values;
-        /**
-         * Instantiate the container.
-         *
-         * Objects and parameters can be passed as argument to the constructor.
-         *
-         * @param array $values The parameters or objects.
-         */
-        function __construct(array $values = array()) {
-            $this->values = $values;
-        }
-        /**
-         * Sets a parameter or an object.
-         *
-         * Objects must be defined as Closures.
-         *
-         * Allowing any PHP callable leads to difficult to debug problems
-         * as function names (strings) are callable (creating a function with
-         * the same a name as an existing parameter would break your container).
-         *
-         * @param string $id    The unique identifier for the parameter or object
-         * @param mixed  $value The value of the parameter or a closure to defined an object
-         */
-        function offsetSet($id, $value) {
-            $this->values[$id] = $value;
-        }
-        /**
-         * Gets a parameter or an object.
-         *
-         * @param  string $id The unique identifier for the parameter or object
-         *
-         * @return mixed  The value of the parameter or an object
-         *
-         * @throws InvalidArgumentException if the identifier is not defined
-         */
-        function offsetGet($id) {
-            if (!array_key_exists($id, $this->values)) {
-                throw new InvalidArgumentException(sprintf('Identifier "%s" is not defined.', $id));
-            }
-            return $this->values[$id] instanceof Closure ? $this->values[$id]($this) : $this->values[$id];
-        }
-        /**
-         * Checks if a parameter or an object is set.
-         *
-         * @param  string $id The unique identifier for the parameter or object
-         *
-         * @return Boolean
-         */
-        function offsetExists($id) {
-            return array_key_exists($id, $this->values);
-        }
-        /**
-         * Unsets a parameter or an object.
-         *
-         * @param  string $id The unique identifier for the parameter or object
-         */
-        function offsetUnset($id) {
-            unset($this->values[$id]);
-        }
-        /**
-         * Returns a closure that stores the result of the given closure for
-         * uniqueness in the scope of this instance of Pimple.
-         *
-         * @param Closure $callable A closure to wrap for uniqueness
-         *
-         * @return Closure The wrapped closure
-         */
-        function share(Closure $callable) {
-            return function ($c) use ($callable) {
-                static $object;
-                if (is_null($object)) {
-                    $object = $callable($c);
-                }
-                return $object;
-            };
-        }
-        /**
-         * Protects a callable from being interpreted as a service.
-         *
-         * This is useful when you want to store a callable as a parameter.
-         *
-         * @param Closure $callable A closure to protect from being evaluated
-         *
-         * @return Closure The protected closure
-         */
-        function protect(Closure $callable) {
-            return function ($c) use ($callable) {
-                return $callable;
-            };
-        }
-        /**
-         * Gets a parameter or the closure defining an object.
-         *
-         * @param  string $id The unique identifier for the parameter or object
-         *
-         * @return mixed  The value of the parameter or the closure defining an object
-         *
-         * @throws InvalidArgumentException if the identifier is not defined
-         */
-        function raw($id) {
-            if (!array_key_exists($id, $this->values)) {
-                throw new InvalidArgumentException(sprintf('Identifier "%s" is not defined.', $id));
-            }
-            return $this->values[$id];
-        }
-        /**
-         * Extends an object definition.
-         *
-         * Useful when you want to extend an existing object definition,
-         * without necessarily loading that object.
-         *
-         * @param  string  $id       The unique identifier for the object
-         * @param  Closure $callable A closure to extend the original
-         *
-         * @return Closure The wrapped closure
-         *
-         * @throws InvalidArgumentException if the identifier is not defined
-         */
-        function extend($id, Closure $callable) {
-            if (!array_key_exists($id, $this->values)) {
-                throw new InvalidArgumentException(sprintf('Identifier "%s" is not defined.', $id));
-            }
-            $factory = $this->values[$id];
-            if (!($factory instanceof Closure)) {
-                throw new InvalidArgumentException(sprintf('Identifier "%s" does not contain an object definition.', $id));
-            }
-            return $this->values[$id] = function ($c) use ($callable, $factory) {
-                return $callable($factory($c), $c);
-            };
-        }
-        /**
-         * Returns all defined value names.
-         *
-         * @return array An array of value names
-         */
-        function keys() {
-            return array_keys($this->values);
-        }
+final class ExecutionContext extends \Pimple {
+    use Mixable;
+    public function __construct($req, $res) {
+        $this->req = $this->request = $req;
+        $this->res = $this->response = $res;
     }
 }
+
+} // asadoo
 namespace {
-    function asadoo() {
+    function asadoo($instance = null) {
         return new \asadoo\Facade(
-            \asadoo\Core::getInstance()
+            is_null($instance) ? \asadoo\Core::getInstance(): $instance
         );
     }
 }

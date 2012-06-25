@@ -5,11 +5,11 @@
 |___|___||_____|___._|_____||_____|_____|
 ```
 
-Asadoo - An experimental lightweight (one file, ~500 lines of code) PHP framework/router.
+Asadoo - An experimental lightweight (one file, ~600 lines of code) PHP framework/router.
 
 Inspired by [Sinatra](http://www.sinatrarb.com/ "Sinatra - Ruby") / [Express](http://expressjs.com/ "Express - NodeJS") / [Silex](http://silex.sensiolabs.org/ "Silex PHP").
 
-Requires PHP 5.3+
+Requires PHP 5.4+
 
 <h3>
  <a name="routing"></a>
@@ -22,7 +22,7 @@ Basic rules
 <?php
 asadoo()
     ->on('/home')
-    ->handle(function($memo, $req, $res, $dependences) {
+    ->handle(function($memo) {
         // ...
     });
 
@@ -36,13 +36,11 @@ Using multiple rules
 asadoo()
     ->on('/view')
     ->on('/view/:id')
-    ->on(function($memo, $req, $res, $dependences) {
+    ->on(function($memo) {
         return $req->isGET() && $req->has('view');
     })
-    ->handle(function($memo, $req, $res, $dependences) {
-        $id = $req->value('id', 'ID not found!');
-
-        $res->end($id);
+    ->handle(function($memo, $id) {
+        $res->write('ID: ', $id);
     });
 
 asadoo()->start();
@@ -65,16 +63,16 @@ asadoo()
     ->on('/data/:entity/:id')
 
     // Actions
-    ->get(function($memo, $req, $res, $dependences) {
+    ->get(function($memo, $entity, $id) {
         // ...
     })
-    ->post(function($memo, $req, $res, $dependences) {
+    ->post(function($memo, $entity, $id) {
         // ...
     })
-    ->put(function($memo, $req, $res, $dependences) {
+    ->put(function($memo, $entity, $id) {
         // ...
     })
-    ->delete(function($memo, $req, $res, $dependences) {
+    ->delete(function($memo, $entity, $id) {
         // ...
     });
 
@@ -88,20 +86,20 @@ Explicit routing (asadoo\Request#forward)
 // Named handlers
 asadoo()
     ->name('handler-1')
-    ->handle(function($memo, $req, $res, $dependences) {
-        $res->write('handler-1</br>');
+    ->handle(function($memo) {
+        $this->res->write('handler-1</br>');
     });
 
 asadoo()
     ->name('handler-2')
-    ->handle(function($memo, $req, $res, $dependences) {
-        $res->write('handler-2</br>');
+    ->handle(function($memo) {
+        $this->res->write('handler-2</br>');
     });
 
 // Our catch-all handler
 asadoo()
     ->on('*')
-    ->handle(function($memo, $req, $res, $dependences) {
+    ->handle(function($memo) {
         // Forward the request to another handler
         $req->forward('handler-' . rand(1, 2));
     });
@@ -116,19 +114,19 @@ asadoo()->start();
 <?php
 asadoo()
     ->on('*')
-    ->handle(function($memo, $req, $res, $dependences) {
+    ->handle(function($memo) {
         return 'Hello ';
     });
 
 asadoo()
     ->on('*')
-    ->handle(function($memo, $req, $res, $dependences) {
+    ->handle(function($memo) {
         return $memo . 'World';
     });
 
 asadoo()
     ->on('*')
-    ->handle(function($memo, $req, $res, $dependences) {
+    ->handle(function($memo) {
         $res->end($memo . '!');
     });
 
@@ -150,9 +148,9 @@ asadoo()->sanitizer(function($value, $type, $dependences) {
 
 asadoo()
     ->on('/inject/get/')
-    ->handle(function($memo, $req, $res, $dependences) {
-        $res->end(
-            $req->get('value') // gets the sanitized value
+    ->handle(function($memo) {
+        $this->res->end(
+            $this->req->get('value') // gets the sanitized value
         );
     });
 
@@ -180,16 +178,16 @@ class ResponseExtension {
 // Mix it!
 asadoo\Response::mix(new ResponseExtension());
 
-asadoo()->get('*', function($memo, $req, $res, $dependences) {
+asadoo()->get('*', function($memo) {
     // Using the new method
-    $res->helloWorld();
+    $this->response->helloWorld();
 });
 
 asadoo()->start();
 ```
 
 <h3>
- <a name="mixmethodsin"></a>
+ <a name="methods"></a>
  <a href="#methods">Methods</a>
 </h3>
 

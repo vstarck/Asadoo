@@ -1,7 +1,9 @@
 <?php
 namespace asadoo;
 
-final class Request extends Mixin {
+final class Request {
+    use Mixable;
+
     const POST = 'POST';
     const GET = 'GET';
     const PUT = 'PUT';

@@ -1,43 +1,21 @@
 <?php
 include '../../dist/asadoo.php';
+include 'data.php';
 
-class MyFakeEntity {
-    private $data = array(
-        0 => array(
-            'name' => 'John',
-            'lastname' => 'Doe'
-        ),
-        1 => array(
-            'name' => 'Jeff',
-            'lastname' => 'Perkins'
-        ),
-        2 => array(
-            'name' => 'Dustin',
-            'lastname' => 'Lock'
-        ),
-        3 => array(
-            'name' => 'Edward',
-            'lastname' => 'Johnson'
-        )
-    );
-
-    public function update($id, $data) {}
-    public function create($data) {}
-    public function delete($id = null) {}
-    public function get($ids = null) {}
-}
-
-class MyFakeEntityFactory {
-    public static function create($entity) {
-        return new MyFakeEntity();
-    }
-}
-
+// Basically, all services
 asadoo()
     ->on('/:entity')
     ->on('/:entity/:id')
     ->handle(function($memo, $req, $res, $dependences) {
-        return MyFakeEntityFactory::create($req->value('entity'));
+        $entity = MyFakeEntityFactory::create($req->value('entity'));
+
+        if(!$entity) {
+            $res
+                ->code(400) // Bad Request
+                ->end();
+        }
+
+        return $entity;
     });
 
 // RESTful interface
@@ -51,9 +29,16 @@ asadoo()
     })
     ->post(function($memo, $req, $res, $dependences) {
         return $memo->create(array(
-            // ... our values
+            'name' => $req->post('name'),
+            'lastname' => $req->post('lastname')
         ));
+    })
+    ->put(function($memo, $req, $res, $dependences) {
+        $res
+            ->code(405) // Method not allowed
+            ->end();
     });
+
 
 asadoo()
     ->on('/:entity/:id')
@@ -63,23 +48,36 @@ asadoo()
     ->get(function($memo, $req, $res, $dependences) {
         return $memo->get($req->value('id'));
     })
+    ->post(function($memo, $req, $res, $dependences) {
+        $res
+            ->code(405) // Method not allowed
+            ->end();
+    })
     ->put(function($memo, $req, $res, $dependences) {
         return $memo->put($req->value('id'), array(
-            // ... our values
+            'name' => $req->post('name'),
+            'lastname' => $req->post('lastname')
         ));
     });
 
-// to JSON
+// JSON output (for all services)
 asadoo()
     ->on('/:entity')
     ->on('/:entity/:id')
     ->handle(function($memo, $req, $res, $dependences) {
-        return json_encode(array(
-            'status' => $memo ? true : false,
+        $result = json_encode(array(
+            'status' => !empty($memo) ? true : false,
             'entity' => $req->value('entity'),
+            'method' => $req->method(),
             'data' => $memo,
             'time' => time()
         ));
+
+        $res->end($result);
     });
+
+asadoo()->on('*')->handle(function($memo, $req, $res) {
+    $res->code(404)->end('404');
+});
 
 asadoo()->start();

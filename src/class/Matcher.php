@@ -1,26 +1,22 @@
 <?php
 namespace asadoo;
 
-final class Matcher extends Mixin {
+final class Matcher {
+    use Mixable;
     /**
      * @var Core
      */
     private $core;
 
     /**
-     * @var Request
+     * @var \asadoo\ExecutionContext
+     */
+    private $executionContext;
+
+    /**
+     * @var \asadoo\Request
      */
     private $request;
-
-    /**
-     * @var Response
-     */
-    private $response;
-
-    /**
-     * @var \Pimple
-     */
-    private $dependences;
 
     /**
      * @param Core $core
@@ -28,11 +24,10 @@ final class Matcher extends Mixin {
      * @param Response $response
      * @param \Pimple $dependences
      */
-    public function __construct($core, $request, $response, $dependences) {
+    public function __construct($core, $executionContext) {
         $this->core = $core;
-        $this->request = $request;
-        $this->response = $response;
-        $this->dependences = $dependences;
+        $this->executionContext = $executionContext;
+        $this->request = $executionContext->request;
     }
 
     /**
@@ -52,9 +47,9 @@ final class Matcher extends Mixin {
      * @param mixed $condition
      * @return bool
      */
-    private function matchCondition($condition) {
-        if (is_callable($condition) && $condition($this->request, $this->response, $this->dependences)) {
-            return true;
+    public function matchCondition($condition) {
+        if (is_callable($condition)) {
+            return $this->core->exec($condition);
         }
 
         if (is_string($condition)) {
@@ -81,6 +76,8 @@ final class Matcher extends Mixin {
 
         if (substr($condition, -1, 1) === '/') {
             $condition = substr($condition, 0, -1) . '/?';
+        } else {
+            $condition .= '/?';
         }
 
         $condition = preg_replace('/\//', '\/', $condition) . '$';
@@ -107,18 +104,18 @@ final class Matcher extends Mixin {
 
         $result = preg_match($condition, $this->request->path(), $values);
 
-        $this->setupValues($keys, $values);
+        if ($result) {
+            $this->setupValues($keys, $values);
+        }
 
         return $result;
     }
 
     private function setupValues($keys, $values) {
-        if (count($keys)) {
-            array_shift($values);
+        array_shift($values);
 
-            $this->request->set(
-                array_combine($keys, $values)
-            );
+        if (count($keys) && count($values) === count($keys)) {
+            $this->request->set(array_combine($keys, $values));
         }
     }
 }
