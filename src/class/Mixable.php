@@ -11,7 +11,7 @@ trait Mixable {
     public function __call($name, $arguments) {
         array_unshift($arguments, $this);
 
-        foreach(self::mixes as $mix) {
+        foreach(self::$mixes as $mix) {
             if(is_object($mix) && method_exists($mix, $name)) {
                 return call_user_func_array(array($mix, $name), $arguments);
             }

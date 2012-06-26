@@ -42,7 +42,7 @@ final class Core {
     private function __construct() {
         $request = $this->request = new Request($this);
         $response = $this->response = new Response($this);
-        $this->executionContext = new ExecutionContext($this, $request, $response);
+        $this->executionContext = new ExecutionContext($request, $response);
 
         $this->matcher = new Matcher($this, $this->executionContext);
     }
@@ -89,6 +89,10 @@ final class Core {
     }
 
     private function fillArguments($fn, $arguments = array()) {
+        if(!is_callable($fn)) {
+            return $arguments;
+        }
+
         $reflection = new \ReflectionFunction($fn);
         $names = $reflection->getParameters();
 
@@ -144,14 +148,13 @@ final class Core {
     }
 
     public function handle($name, $memo = null) {
-        if(!is_null($this->memo)) {
+        if(!is_null($memo)) {
             $this->memo = $memo;
         }
 
         foreach ($this->handlers as $handler) {
             if ($handler->name() === $name) {
-                $this->exec($handler);
-                break;
+                return $this->exec($handler);
             }
         }
 
