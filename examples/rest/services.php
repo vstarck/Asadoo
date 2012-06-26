@@ -10,7 +10,7 @@ asadoo()
         $entity = MyFakeEntityFactory::create($entityName);
 
         if(!$entity) {
-            return $this->forward('error', 400);  //Bad Request
+            return $this->request->forward('error', 400);  //Bad Request
         }
 
         return $entity;
@@ -30,12 +30,12 @@ asadoo()
     })
     ->post(function($memo) {
         return $memo->create(array(
-            'name' => $this->req->post('name'),
-            'lastname' => $this->req->post('lastname')
+            'name' => $this->request->post('name'),
+            'lastname' => $this->request->post('lastname')
         ));
     })
     ->put(function($memo) {
-        $this->forward('error', 405);  // Method not allowed
+        return $this->request->forward('error', 405);  // Method not allowed
     });
 
 
@@ -48,12 +48,12 @@ asadoo()
         return $memo->get($id);
     })
     ->post(function($memo) {
-        $this->forward('error', 405);  // Method not allowed
+        return $this->request->forward('error', 405);  // Method not allowed
     })
     ->put(function($memo, $id) {
         return $memo->put($id, array(
-            'name' => $this->req->post('name'),
-            'lastname' => $this->req->post('lastname')
+            'name' => $this->request->post('name'),
+            'lastname' => $this->request->post('lastname')
         ));
     });
 
@@ -61,9 +61,7 @@ asadoo()
 asadoo()
     ->name('error')
     ->handle(function($memo) {
-        $this->response
-                ->code($memo)
-                ->end();
+        return $this->response->code($memo)->end();
     });
 
 
