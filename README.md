@@ -40,7 +40,7 @@ asadoo()
         return $this->req->isGET() && $this->req->has('view');
     })
     ->handle(function($memo, $id = 0) {
-        $res->write('ID: ', $id);
+        $this->res->write('ID: ', $id);
     });
 
 asadoo()->start();
@@ -66,7 +66,7 @@ asadoo()
     ->get(function($memo, $entity, $id) {
         // ...
     })
-    ->post(function($memo, $entity, $id) {
+    ->post(function($memo, $entity) {
         // ...
     })
     ->put(function($memo, $entity, $id) {
@@ -186,10 +186,8 @@ asadoo()->get('*', function($memo) {
 asadoo()->start();
 ```
 
-<h3>
- <a name="methods"></a>
- <a href="#methods">Methods</a>
-</h3>
+
+###API###
 
 ```
 asadoo\Facade
@@ -206,19 +204,26 @@ asadoo\Facade
 ```
 
 ```
+asadoo\ExecutionContext (aka functional handlers)
+    request
+    response
+    core
+```
+
+```
 asadoo\Request
     agent([ string $matches ])
     domain()
-    forward(string $handlerName)
+    forward(string $handlerName[, mixed $memo])
     get(string $key)
     baseURL()
-    has(string $match)
     ip()
     isHTTPS()
     isDELETE()
     isGET()
     isPOST()
     isPUT()
+    matches(string $match)
     method(string $method)
     path()
     port()
