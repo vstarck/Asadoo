@@ -37,9 +37,9 @@ asadoo()
     ->on('/view')
     ->on('/view/:id')
     ->on(function($memo) {
-        return $req->isGET() && $req->has('view');
+        return $this->req->isGET() && $this->req->has('view');
     })
-    ->handle(function($memo, $id) {
+    ->handle(function($memo, $id = 0) {
         $res->write('ID: ', $id);
     });
 
@@ -52,7 +52,7 @@ Capturing by POST / GET / PUT / DELETE
 <?php
 
 asadoo()
-    ->get('/user/logout', function($memo, $req, $res, $dependences) {
+    ->get('/user/logout', function($memo) {
 
     });
 
@@ -142,7 +142,7 @@ You can define an anonymous function to sanitize GET/POST and values for all han
 
 ````php
 <?php
-asadoo()->sanitizer(function($value, $type, $dependences) {
+asadoo()->sanitizer(function($value, $type) {
     return preg_replace('/[^a-z\d]/', '', $value);
 });
 
@@ -170,8 +170,8 @@ You can augment base classes at runtime
 class ResponseExtension {
     // Extensions methods always have as its first argument a
     // reference to the actual object
-    public function helloWorld($resInstance) {
-        $resInstance->end('Hello World!');
+    public function helloWorld($responseInstance) {
+        $responseInstance->end('Hello World!');
     }
 }
 
