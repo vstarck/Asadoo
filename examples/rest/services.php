@@ -6,13 +6,11 @@ include 'data.php';
 asadoo()
     ->on('/:entity')
     ->on('/:entity/:id')
-    ->handle(function($memo, $req, $res, $dependences) {
-        $entity = MyFakeEntityFactory::create($req->value('entity'));
+    ->handle(function($memo, $entityName) {
+        $entity = MyFakeEntityFactory::create($entityName);
 
         if(!$entity) {
-            $res
-                ->code(400) // Bad Request
-                ->end();
+            return $this->forward('error', 400);  //Bad Request
         }
 
         return $entity;
@@ -21,63 +19,73 @@ asadoo()
 // RESTful interface
 asadoo()
     ->on('/:entity')
-    ->delete(function($memo, $req, $res, $dependences) {
+    ->delete(function($memo) {
         return $memo->delete();
     })
-    ->get(function($memo, $req, $res, $dependences) {
-        return $memo->get();
+    ->get(function($memo) {
+        return array(
+            'items' => $memo->get(),
+            'count' => count($memo->get())
+        );
     })
-    ->post(function($memo, $req, $res, $dependences) {
+    ->post(function($memo) {
         return $memo->create(array(
-            'name' => $req->post('name'),
-            'lastname' => $req->post('lastname')
+            'name' => $this->req->post('name'),
+            'lastname' => $this->req->post('lastname')
         ));
     })
-    ->put(function($memo, $req, $res, $dependences) {
-        $res
-            ->code(405) // Method not allowed
-            ->end();
+    ->put(function($memo) {
+        $this->forward('error', 405);  // Method not allowed
     });
 
 
 asadoo()
     ->on('/:entity/:id')
-    ->delete(function($memo, $req, $res, $dependences) {
-        return $memo->delete($req->value('id'));
+    ->delete(function($memo, $id) {
+        return $memo->delete($id);
     })
-    ->get(function($memo, $req, $res, $dependences) {
-        return $memo->get($req->value('id'));
+    ->get(function($memo, $id) {
+        return $memo->get($id);
     })
-    ->post(function($memo, $req, $res, $dependences) {
-        $res
-            ->code(405) // Method not allowed
-            ->end();
+    ->post(function($memo) {
+        $this->forward('error', 405);  // Method not allowed
     })
-    ->put(function($memo, $req, $res, $dependences) {
-        return $memo->put($req->value('id'), array(
-            'name' => $req->post('name'),
-            'lastname' => $req->post('lastname')
+    ->put(function($memo, $id) {
+        return $memo->put($id, array(
+            'name' => $this->req->post('name'),
+            'lastname' => $this->req->post('lastname')
         ));
     });
+
+// Our error handler
+asadoo()
+    ->name('error')
+    ->handle(function($memo) {
+        $this->response
+                ->code($memo)
+                ->end();
+    });
+
 
 // JSON output (for all services)
 asadoo()
     ->on('/:entity')
     ->on('/:entity/:id')
-    ->handle(function($memo, $req, $res, $dependences) {
+    ->handle(function($memo, $entity) {
         $result = json_encode(array(
             'status' => !empty($memo) ? true : false,
-            'entity' => $req->value('entity'),
-            'method' => $req->method(),
+            'entity' => $entity,
+            'method' => $this->req->method(),
             'data' => $memo,
             'time' => time()
         ));
 
-        $res->end($result);
+        $this->response->end($result);
     });
 
-asadoo()->on('*')->handle(function($memo, $req, $res) {
-    $res->code(404)->end('404');
+// All unattended requests
+asadoo()->on('*')->handle(function($memo) {
+    $this->response->code(404)->end('404');
 });
 
 asadoo()->start();

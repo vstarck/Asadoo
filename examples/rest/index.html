@@ -8,7 +8,7 @@
         }
 
         textarea {
-            width: 400px;
+            width: 564px;
             height: 200px;
             background: #ddd;
         }
@@ -33,12 +33,16 @@
 <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js"></script>
 <script type="text/javascript">
     $(function () {
-        function send(type, args) {
-
+        function send(type, args, id) {
+            $.ajax({
+                url: 'services.php/person/' + id || '',
+                complete: handle,
+                type: type
+            });
         }
 
         function handle(response) {
-
+            $('textarea').val(response.responseText);
         }
 
         function enable(sel) {
@@ -72,7 +76,10 @@
         $('select').on('change', setup);
 
         $('button').on('click', function () {
-
+            send($('select').val(), {
+                name: $('#name').val(),
+                lastname: $('#lastname').val()
+            }, $('#id').val());
         });
 
         setup();
