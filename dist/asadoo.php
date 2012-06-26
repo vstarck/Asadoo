@@ -94,7 +94,7 @@ trait Mixable {
     }
     public function __call($name, $arguments) {
         array_unshift($arguments, $this);
-        foreach(self::mixes as $mix) {
+        foreach(self::$mixes as $mix) {
             if(is_object($mix) && method_exists($mix, $name)) {
                 return call_user_func_array(array($mix, $name), $arguments);
             }
@@ -119,7 +119,7 @@ final class Core {
     private function __construct() {
         $request = $this->request = new Request($this);
         $response = $this->response = new Response($this);
-        $this->executionContext = new ExecutionContext($this, $request, $response);
+        $this->executionContext = new ExecutionContext($request, $response);
         $this->matcher = new Matcher($this, $this->executionContext);
     }
     private function __clone() {
@@ -154,6 +154,9 @@ final class Core {
         }
     }
     private function fillArguments($fn, $arguments = array()) {
+        if(!is_callable($fn)) {
+            return $arguments;
+        }
         $reflection = new \ReflectionFunction($fn);
         $names = $reflection->getParameters();
         array_shift($names);
@@ -197,13 +200,12 @@ final class Core {
         return $this->request->baseURL();
     }
     public function handle($name, $memo = null) {
-        if(!is_null($this->memo)) {
+        if(!is_null($memo)) {
             $this->memo = $memo;
         }
         foreach ($this->handlers as $handler) {
             if ($handler->name() === $name) {
-                $this->exec($handler);
-                break;
+                return $this->exec($handler);
             }
         }
         return $this;
@@ -581,13 +583,9 @@ final class Facade {
 }
 final class ExecutionContext extends \Pimple {
     use Mixable;
-    public function __construct($core, $req, $res) {
-        $this->core = $core;
+    public function __construct($req, $res) {
         $this->req = $this->request = $req;
         $this->res = $this->response = $res;
-    }
-    private function matches($test) {
-        return $this->core->matches($test);
     }
 }
 
