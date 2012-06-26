@@ -67,13 +67,14 @@ final class Facade {
             $handler->on($route);
         }
 
-        $handler->handle(function($memo, $req, $res, $dependences) use($method, $fn, $route) {
-            //echo "Method: $method - Route: $route<hr/>";
-            if ($req->method() !== $method || (is_null($route) || $this->core->matches($route))) {
-                return $memo;
+        $handler->handle(function($memo) use($method, $fn, $route) {
+            $core = $this->core;
+
+            if ($this->req->method() === $method && (is_null($route) || $core->matches($route))) {
+               return $core->exec($fn);
             }
 
-            return $fn($memo, $req, $res, $dependences);
+            return $memo;
         });
 
         return $this;

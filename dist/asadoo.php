@@ -103,7 +103,7 @@ trait Mixable {
     }
 }
 final class Core {
-use Mixable;
+    use Mixable;
     private static $instance;
     private $request;
     private $response;
@@ -119,8 +119,8 @@ use Mixable;
     private function __construct() {
         $request = $this->request = new Request($this);
         $response = $this->response = new Response($this);
-        $executionContext = $this->executionContext = new ExecutionContext($request, $response);
-        $this->matcher = new Matcher($this, $executionContext);
+        $this->executionContext = new ExecutionContext($this, $request, $response);
+        $this->matcher = new Matcher($this, $this->executionContext);
     }
     private function __clone() {
     }
@@ -196,7 +196,10 @@ use Mixable;
     public function baseURL() {
         return $this->request->baseURL();
     }
-    public function handle($name) {
+    public function handle($name, $memo = null) {
+        if(!is_null($this->memo)) {
+            $this->memo = $memo;
+        }
         foreach ($this->handlers as $handler) {
             if ($handler->name() === $name) {
                 $this->exec($handler);
@@ -325,13 +328,13 @@ final class Request {
         return $this->method() == self::DELETE;
     }
     public function scheme() {
-        return empty($_SERVER['HTTPS']) || $_SERVER['HTTPS'] !== 'off' ? self::HTTP : self::HTTPS;
+        return empty($_SERVER['HTTPS']) || $_SERVER['HTTPS'] === 'off' ? self::HTTP : self::HTTPS;
     }
     public function isHTTPS() {
         return $this->scheme() == self::HTTPS;
     }
-    public function forward($name) {
-        $this->core->handle($name);
+    public function forward($name, $memo = null) {
+        $this->core->handle($name, $memo);
     }
 }
 final class Response {
@@ -535,12 +538,12 @@ final class Facade {
         if(!is_null($route)) {
             $handler->on($route);
         }
-        $handler->handle(function($memo, $req, $res, $dependences) use($method, $fn, $route) {
-            //echo "Method: $method - Route: $route<hr/>";
-            if ($req->method() !== $method || (is_null($route) || $this->core->matches($route))) {
-                return $memo;
+        $handler->handle(function($memo) use($method, $fn, $route) {
+            $core = $this->core;
+            if ($this->req->method() === $method && (is_null($route) || $core->matches($route))) {
+               return $core->exec($fn);
             }
-            return $fn($memo, $req, $res, $dependences);
+            return $memo;
         });
         return $this;
     }
@@ -578,9 +581,13 @@ final class Facade {
 }
 final class ExecutionContext extends \Pimple {
     use Mixable;
-    public function __construct($req, $res) {
+    public function __construct($core, $req, $res) {
+        $this->core = $core;
         $this->req = $this->request = $req;
         $this->res = $this->response = $res;
+    }
+    private function matches($test) {
+        return $this->core->matches($test);
     }
 }
 

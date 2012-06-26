@@ -2,7 +2,7 @@
 namespace asadoo;
 
 final class Core {
-use Mixable;
+    use Mixable;
 
     /**
      * @var Core
@@ -42,9 +42,9 @@ use Mixable;
     private function __construct() {
         $request = $this->request = new Request($this);
         $response = $this->response = new Response($this);
-        $executionContext = $this->executionContext = new ExecutionContext($request, $response);
+        $this->executionContext = new ExecutionContext($this, $request, $response);
 
-        $this->matcher = new Matcher($this, $executionContext);
+        $this->matcher = new Matcher($this, $this->executionContext);
     }
 
     private function __clone() {
@@ -143,7 +143,11 @@ use Mixable;
         return $this->request->baseURL();
     }
 
-    public function handle($name) {
+    public function handle($name, $memo = null) {
+        if(!is_null($this->memo)) {
+            $this->memo = $memo;
+        }
+
         foreach ($this->handlers as $handler) {
             if ($handler->name() === $name) {
                 $this->exec($handler);

@@ -171,14 +171,14 @@ final class Request {
     }
 
     public function scheme() {
-        return empty($_SERVER['HTTPS']) || $_SERVER['HTTPS'] !== 'off' ? self::HTTP : self::HTTPS;
+        return empty($_SERVER['HTTPS']) || $_SERVER['HTTPS'] === 'off' ? self::HTTP : self::HTTPS;
     }
 
     public function isHTTPS() {
         return $this->scheme() == self::HTTPS;
     }
 
-    public function forward($name) {
-        $this->core->handle($name);
+    public function forward($name, $memo = null) {
+        $this->core->handle($name, $memo);
     }
 }
