@@ -11,6 +11,11 @@ Inspired by [Sinatra](http://www.sinatrarb.com/ "Sinatra - Ruby") / [Express](ht
 
 Requires PHP 5.4+
 
+Goals: 
+    *Provide a succint (no classes, no namespaces) and very functional API for small apps/websites.    
+    *Provide a queue-like API for more complex usages.
+    *Let me play with anonymous functions and traits :)
+
 <h3>
  <a name="routing"></a>
  <a href="#routing">Routing</a>
